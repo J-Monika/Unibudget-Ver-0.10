@@ -299,6 +299,10 @@
   @media (prefers-color-scheme: dark) { .txn .ic.exp { background: #3a1c1c; } }
   :root[data-theme="dark"] .txn .ic.exp { background: #3a1c1c; }
   :root[data-theme="light"] .txn .ic.exp { background: #fee2e2; }
+  .txn .ic.utang { background: #fef3c7; color: #d97706; font-size: 22px; font-weight: 800; }
+  @media (prefers-color-scheme: dark) { .txn .ic.utang { background: #452b05; color: #fbbf24; } }
+  :root[data-theme="dark"] .txn .ic.utang { background: #452b05; color: #fbbf24; }
+  :root[data-theme="light"] .txn .ic.utang { background: #fef3c7; color: #d97706; }
   .txn .desc { min-width: 0; flex: 1; }
   .txn .desc .t { font-weight: 700; font-size: 14.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .txn .desc .s { font-size: 12px; color: var(--muted); }
@@ -1253,11 +1257,16 @@
       var sorted = list.slice().sort(function(a,b){ return b.ts - a.ts; });
       sorted.forEach(function(t){
         var isInc = t.type === "income";
+        var isUtang = !!t.isUtangOrigin || (typeof t.sub === "string" && t.sub.indexOf("Utang -") === 0);
+        var iconHtml = isUtang
+          ? '<div class="ic utang">−</div>'
+          : '<div class="ic '+(isInc?"inc":"exp")+'">'+(isInc?"↓":"↑")+'</div>';
+        var subText = t.sub || t.cat;
         var row = document.createElement("div");
         row.className = "txn";
         row.innerHTML =
-          '<div class="ic '+(isInc?"inc":"exp")+'">'+(isInc?"↓":"↑")+'</div>'+
-          '<div class="desc"><div class="t">'+esc(t.desc)+'</div><div class="s">'+esc(t.cat)+'</div></div>'+
+          iconHtml+
+          '<div class="desc"><div class="t">'+esc(t.desc)+'</div><div class="s">'+esc(subText)+'</div></div>'+
           '<div class="amt num '+(isInc?"inc":"exp")+'">'+(isInc?"+":"−")+fmt(t.amount).replace("−","")+'</div>'+
           '<button class="del" title="Delete" aria-label="Delete transaction">'+
             '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>'+
@@ -1749,19 +1758,42 @@
     var amount = parseFloat(el("#utangAmount").value);
     if (!person){ toast("Enter a person's name"); el("#utangPerson").focus(); return; }
     if (!(amount > 0)){ toast("Enter an amount greater than 0"); el("#utangAmount").focus(); return; }
+    var uAmount = Math.round(amount*100)/100;
+    var uId = utangId();
+    var txnId = id();
+
+    // Create linked budget transaction:
+    // 'lent' (I lent) -> Expense (money out)
+    // 'borrowed' (I borrowed) -> Income (money in)
+    var txnType = utangDirVal === "lent" ? "expense" : "income";
+    var subText = utangDirVal === "lent" ? "Utang - Lent" : "Utang - Borrowed";
+    state.txns.push({
+      id: txnId,
+      desc: person,
+      sub: subText,
+      amount: uAmount,
+      type: txnType,
+      cat: "Other",
+      isUtangOrigin: true,
+      ts: now(),
+      updated_at: now(),
+      deleted: false
+    });
+
     state.utangs.push({
-      id: utangId(),
+      id: uId,
       person: person,
-      amount: Math.round(amount*100)/100,
+      amount: uAmount,
       direction: utangDirVal,
       dueDate: el("#utangDue").value || "",
       notes: el("#utangNotes").value.trim(),
       payments: [],
       settled: false,
+      txnId: txnId,
       ts: now(),
       deleted: false
     });
-    save(); renderUtang(); closeAddUtang();
+    save(); render(); renderUtang(); closeAddUtang();
     toast("Utang saved ✓");
   }
 
@@ -1822,8 +1854,22 @@
   function deleteUtang(uid){
     if (!confirm("Delete this Utang record? This cannot be undone.")) return;
     var u = (state.utangs||[]).filter(function(x){ return x.id===uid; })[0];
-    if (u){ u.deleted = true; }
-    save(); renderUtang();
+    if (u){
+      u.deleted = true;
+      // Also soft-delete linked initial transaction if present
+      if (u.txnId){
+        var initTxn = (state.txns||[]).filter(function(x){ return x.id === u.txnId; })[0];
+        if (initTxn){ initTxn.deleted = true; initTxn.updated_at = now(); }
+      }
+      // Also soft-delete linked payment transactions if present
+      (u.payments||[]).forEach(function(p){
+        if (p.txnId){
+          var pTxn = (state.txns||[]).filter(function(x){ return x.id === p.txnId; })[0];
+          if (pTxn){ pTxn.deleted = true; pTxn.updated_at = now(); }
+        }
+      });
+    }
+    save(); render(); renderUtang();
     toast("Utang deleted");
   }
 
