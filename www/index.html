@@ -521,9 +521,121 @@
     }
     #tabbar button span { font-size: 21px; line-height: 1; }
     #tabbar button:active { background: var(--page); }
+    #tabbar button.active { color: var(--accent); }
     #tabbar button.danger { color: var(--spent); }
     body.authed main { padding-bottom: 96px; }   /* clear the bar */
   }
+
+  /* ========== Utang feature ========== */
+  #utangSection {
+    max-width: 1180px; margin: 0 auto; padding: 28px 24px 120px;
+  }
+  .utang-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
+  }
+  .utang-header h2 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -.02em; }
+  .utang-add-btn {
+    border: 0; cursor: pointer; font-family: inherit; font-weight: 800; font-size: 15px;
+    background: var(--accent); color: #fff; padding: 12px 20px; border-radius: 13px;
+    display: inline-flex; align-items: center; gap: 7px; transition: background .15s, transform .1s;
+  }
+  .utang-add-btn:hover { background: var(--accent-strong); }
+  .utang-add-btn:active { transform: scale(.97); }
+  .utang-group { margin-bottom: 32px; }
+  .utang-group-head {
+    font-size: 13px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 12px; padding-bottom: 8px;
+    border-bottom: 2px solid var(--line); display: flex; align-items: center; gap: 8px;
+  }
+  .utang-group-head .utang-total {
+    margin-left: auto; font-size: 13.5px; font-weight: 800; color: var(--ink); text-transform: none; letter-spacing: 0;
+  }
+  .utang-empty {
+    text-align: center; color: var(--muted); font-size: 14px; padding: 28px 16px;
+    background: var(--page); border-radius: 14px; border: 1.5px dashed var(--line);
+  }
+  .utang-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+    box-shadow: var(--shadow); padding: 18px 20px 14px; margin-bottom: 12px;
+    transition: box-shadow .15s;
+  }
+  .utang-card:hover { box-shadow: 0 4px 24px rgba(79,70,229,.10); }
+  .utang-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+  .utang-person { font-weight: 800; font-size: 16px; display: flex; align-items: center; gap: 7px; }
+  .utang-person .dir-badge {
+    font-size: 10.5px; font-weight: 800; padding: 3px 9px; border-radius: 999px;
+    letter-spacing: .04em; text-transform: uppercase; flex-shrink: 0;
+  }
+  .dir-badge.lent { background: var(--income-soft); color: var(--income); }
+  .dir-badge.borrowed { background: #fee2e2; color: var(--spent); }
+  :root[data-theme="dark"] .dir-badge.borrowed { background: #3a1c1c; }
+  @media (prefers-color-scheme: dark) { .dir-badge.borrowed { background: #3a1c1c; } }
+  .utang-due {
+    font-size: 12px; font-weight: 700; color: var(--muted); white-space: nowrap; flex-shrink: 0;
+  }
+  .utang-due.overdue { color: var(--spent); }
+  .utang-notes { font-size: 12.5px; color: var(--muted); margin-bottom: 10px; font-style: italic; }
+  .utang-progress-wrap { margin-bottom: 10px; }
+  .utang-progress-meta {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 6px; gap: 8px;
+  }
+  .utang-progress-meta .paid-lbl { font-size: 12.5px; font-weight: 700; color: var(--muted); }
+  .utang-progress-meta .remaining {
+    font-size: 14px; font-weight: 800; color: var(--ink); white-space: nowrap;
+  }
+  .utang-progress-meta .pct { font-size: 12px; font-weight: 800; color: var(--accent); }
+  .utang-bar { height: 8px; border-radius: 999px; background: var(--track); overflow: hidden; }
+  .utang-bar > span {
+    display: block; height: 100%; border-radius: 999px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-strong));
+    transition: width .4s ease;
+  }
+  .utang-bar > span.full { background: linear-gradient(90deg, var(--income), #15803d); }
+  .utang-actions { display: flex; gap: 8px; margin-top: 12px; }
+  .utang-pay-btn {
+    border: 0; cursor: pointer; font-family: inherit; font-weight: 700; font-size: 13px;
+    background: var(--accent); color: #fff; padding: 8px 16px; border-radius: 10px;
+    display: inline-flex; align-items: center; gap: 5px; transition: background .15s, transform .1s;
+  }
+  .utang-pay-btn:hover { background: var(--accent-strong); }
+  .utang-pay-btn:active { transform: scale(.97); }
+  .utang-del-btn {
+    border: 1.5px solid var(--line); background: var(--card); cursor: pointer;
+    font-family: inherit; font-weight: 700; font-size: 13px; color: var(--muted);
+    padding: 8px 14px; border-radius: 10px; transition: all .15s;
+  }
+  .utang-del-btn:hover { border-color: var(--spent); color: var(--spent); background: rgba(220,38,38,.06); }
+  .utang-settled-btn {
+    width: 100%; border: 1.5px solid var(--line); background: var(--card);
+    color: var(--muted); font-family: inherit; font-weight: 700; font-size: 14px;
+    cursor: pointer; padding: 13px; border-radius: 13px; margin-top: 8px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: background .15s, border-color .15s;
+  }
+  .utang-settled-btn:hover { background: var(--page); border-color: var(--accent); color: var(--accent); }
+  /* Paid modal card */
+  .paid-card {
+    background: var(--page); border-radius: 14px; padding: 14px 16px; margin-bottom: 10px;
+    border: 1px solid var(--line);
+  }
+  .paid-card-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .paid-person { font-weight: 800; font-size: 15px; display: flex; align-items: center; gap: 7px; }
+  .paid-badge {
+    display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 800;
+    padding: 3px 9px; border-radius: 999px; background: var(--income-soft); color: var(--income);
+  }
+  .paid-summary { font-size: 13px; color: var(--muted); margin-top: 5px; font-weight: 600; }
+  /* dir-toggle reuse inside utang modal */
+  .dir-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .dir-toggle button {
+    border: 1.5px solid var(--line); background: var(--card); color: var(--muted);
+    padding: 11px; border-radius: 12px; font-weight: 700; font-size: 14px; cursor: pointer;
+    font-family: inherit; transition: all .15s;
+  }
+  .dir-toggle button.on-lent { border-color: var(--income); background: var(--income); color: #fff; }
+  .dir-toggle button.on-borrowed { border-color: var(--spent); background: var(--spent); color: #fff; }
 </style>
 </head>
 <body>
@@ -777,13 +889,131 @@
 <div class="toast" id="toast"></div>
 
 <nav id="tabbar" aria-label="Quick actions">
-  <button type="button" data-act="home"><span>🏠</span>Home</button>
-  <button type="button" data-act="gcash"><span>🔗</span>Wallets</button>
+  <button type="button" data-act="home" id="tabHome"><span>🏠</span>Home</button>
+  <button type="button" data-act="utang" id="tabUtang"><span>🤝</span>Utang</button>
   <button type="button" data-act="rewards"><span>🏆</span>Rewards</button>
   <button type="button" data-act="logout" class="danger"><span>↪</span>Log out</button>
 </nav>
 
 <div id="onb"><div class="onb-card" id="onbCard"></div></div>
+
+<!-- ============ UTANG SECTION ============ -->
+<section id="utangSection" style="display:none" aria-label="Utang tracker">
+  <div class="utang-header">
+    <h2>🤝 Utang Tracker</h2>
+    <button class="utang-add-btn" id="addUtangBtn">＋ New Utang</button>
+  </div>
+
+  <!-- They Owe You -->
+  <div class="utang-group" id="utangGroupLent">
+    <div class="utang-group-head">
+      🤲 They Owe You
+      <span class="utang-total" id="utangTotalLent"></span>
+    </div>
+    <div id="utangOwedToMe"></div>
+  </div>
+
+  <!-- You Owe Them -->
+  <div class="utang-group" id="utangGroupBorrowed">
+    <div class="utang-group-head">
+      🙏 You Owe Them
+      <span class="utang-total" id="utangTotalBorrowed"></span>
+    </div>
+    <div id="utangIOwe"></div>
+  </div>
+
+  <button class="utang-settled-btn" id="settledBtn">📁 Paid Utangs</button>
+</section>
+
+<!-- ============ ADD UTANG MODAL ============ -->
+<div class="scrim" id="utangScrim">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="utangModalTitle">
+    <div class="modal-head">
+      <div>
+        <h3 id="utangModalTitle">🤝 New Utang</h3>
+        <p>Record a loan you gave or received.</p>
+      </div>
+      <button class="x" id="utangClose" aria-label="Close">✕</button>
+    </div>
+    <div class="goal-list">
+      <div class="field">
+        <label for="utangPerson">Person's name</label>
+        <input id="utangPerson" type="text" placeholder="e.g. Juan, Ate Marie" autocomplete="off" />
+      </div>
+      <div class="field">
+        <label for="utangAmount">Total loan amount</label>
+        <div class="amt-wrap">
+          <span class="sym" id="utangSym">₱</span>
+          <input id="utangAmount" class="num" type="number" min="0.01" step="0.01" placeholder="0.00" style="padding-left:30px" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Direction</label>
+        <div class="dir-toggle">
+          <button type="button" id="dirLent" class="on-lent" data-dir="lent">🤲 I Lent</button>
+          <button type="button" id="dirBorrowed" data-dir="borrowed">🙏 I Borrowed</button>
+        </div>
+      </div>
+      <div class="field">
+        <label for="utangDue">Due date <span style="font-weight:500;color:var(--muted)">(optional)</span></label>
+        <input id="utangDue" type="date" class="f" />
+      </div>
+      <div class="field">
+        <label for="utangNotes">Notes / purpose <span style="font-weight:500;color:var(--muted)">(optional)</span></label>
+        <input id="utangNotes" type="text" placeholder="e.g. para sa tuition, dorm deposit" autocomplete="off" />
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="ghost" id="utangCancel" style="flex:1">Cancel</button>
+      <button class="submit" id="utangSave" style="flex:1">Save Utang</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ LOG PAYMENT MODAL ============ -->
+<div class="scrim" id="payScrim">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="payModalTitle">
+    <div class="modal-head">
+      <div>
+        <h3 id="payModalTitle">💳 Log a Payment</h3>
+        <p id="payModalSub">Record a partial or full payment.</p>
+      </div>
+      <button class="x" id="payClose" aria-label="Close">✕</button>
+    </div>
+    <div class="goal-list">
+      <div class="field">
+        <label for="payAmount">Payment amount</label>
+        <div class="amt-wrap">
+          <span class="sym" id="paySym">₱</span>
+          <input id="payAmount" class="num" type="number" min="0.01" step="0.01" placeholder="0.00" style="padding-left:30px" />
+        </div>
+        <span id="payRemaining" style="font-size:12.5px;color:var(--muted);font-weight:600;margin-top:2px"></span>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="ghost" id="payCancel" style="flex:1">Cancel</button>
+      <button class="submit" id="paySave" style="flex:1">Log Payment</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PAID UTANGS MODAL ============ -->
+<div class="scrim" id="paidScrim">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="paidModalTitle">
+    <div class="modal-head">
+      <div>
+        <h3 id="paidModalTitle">📁 Paid Utangs</h3>
+        <p>All fully settled loans.</p>
+      </div>
+      <button class="x" id="paidClose" aria-label="Close">✕</button>
+    </div>
+    <div class="goal-list" id="paidList"></div>
+    <div class="modal-foot">
+      <button class="submit" id="paidDone" style="flex:1">Done</button>
+    </div>
+  </div>
+</div>
+
 </div><!-- /#app -->
 
 
@@ -851,6 +1081,7 @@
     if (!s.limits || !Object.keys(s.limits).length) s.limits = Object.assign({}, DEFAULT_LIMITS);
     if (!s.allowance) s.allowance = { amount: 0, period: "weekly", anchor: 0, reserve: 0 };
     if (!Array.isArray(s.txns)) s.txns = [];
+    if (!Array.isArray(s.utangs)) s.utangs = [];  // Utang feature backfill
     s.txns.forEach(function(t){
       if (!t.id) t.id = id();
       if (typeof t.ts !== "number") t.ts = now();
@@ -1335,6 +1566,240 @@
     toastTimer = setTimeout(function(){ t.classList.remove("show"); }, 2200);
   }
 
+  // =====================================================================
+  //  UTANG — Loan tracker
+  // =====================================================================
+  function utangId(){ return "u-" + Math.random().toString(36).slice(2,10) + Date.now().toString(36); }
+  function payId(){   return "p-" + Math.random().toString(36).slice(2,10) + Date.now().toString(36); }
+
+  function utangPaid(u){
+    return (u.payments||[]).reduce(function(a,p){ return a + p.amount; }, 0);
+  }
+  function utangRemaining(u){ return Math.max(0, u.amount - utangPaid(u)); }
+  function utangPct(u){ return Math.min(100, (utangPaid(u)/u.amount)*100); }
+  function fmtDue(dateStr){
+    if (!dateStr) return "No due date";
+    var d = new Date(dateStr + "T00:00:00");
+    return d.toLocaleDateString(undefined, { month:"short", day:"numeric", year:"numeric" });
+  }
+  function isDuePast(dateStr){
+    if (!dateStr) return false;
+    var d = new Date(dateStr + "T00:00:00");
+    return d < new Date(new Date().toDateString());
+  }
+
+  function renderUtang(){
+    if (!state || !Array.isArray(state.utangs)) return;
+    var active = state.utangs.filter(function(u){ return !u.deleted && !u.settled; });
+    var lentList  = active.filter(function(u){ return u.direction === "lent"; });
+    var borrList  = active.filter(function(u){ return u.direction === "borrowed"; });
+
+    function buildCard(u){
+      var paid    = utangPaid(u);
+      var rem     = utangRemaining(u);
+      var pct     = utangPct(u);
+      var isFull  = rem <= 0;
+      var dueStr  = fmtDue(u.dueDate);
+      var overdue = isDuePast(u.dueDate);
+      var card = document.createElement("div");
+      card.className = "utang-card";
+      card.innerHTML =
+        '<div class="utang-card-top">'+
+          '<div class="utang-person">'+
+            '<span class="dir-badge '+(u.direction==='lent'?'lent':'borrowed')+'">'+(u.direction==='lent'?'Lent':'Borrowed')+'</span>'+
+            esc(u.person)+
+          '</div>'+
+          '<div class="utang-due'+(overdue?' overdue':'')+'">'+esc(dueStr)+'</div>'+
+        '</div>'+
+        (u.notes ? '<div class="utang-notes">'+esc(u.notes)+'</div>' : '')+
+        '<div class="utang-progress-wrap">'+
+          '<div class="utang-progress-meta">'+
+            '<span class="paid-lbl">Paid: '+fmt(paid)+' of '+fmt(u.amount)+'</span>'+
+            '<span class="pct">'+Math.round(pct)+'%</span>'+
+            '<span class="remaining">'+fmt(rem)+' left</span>'+
+          '</div>'+
+          '<div class="utang-bar"><span class="'+(isFull?'full':''+'"')+' style="width:'+Math.round(pct)+'%"></span></div>'+
+        '</div>'+
+        '<div class="utang-actions">'+
+          (!isFull ? '<button class="utang-pay-btn" data-uid="'+u.id+'">💳 Pay</button>' : '')+
+          '<button class="utang-del-btn" data-uid="'+u.id+'">🗑 Delete</button>'+
+        '</div>';
+      card.querySelector(".utang-del-btn").addEventListener("click", function(){
+        deleteUtang(u.id);
+      });
+      if (!isFull) {
+        card.querySelector(".utang-pay-btn").addEventListener("click", function(){
+          openPayUtang(u.id);
+        });
+      }
+      return card;
+    }
+
+    var lentEl = el("#utangOwedToMe"); lentEl.innerHTML = "";
+    if (!lentList.length){
+      lentEl.innerHTML = '<div class="utang-empty">No active loans here. Tap <b>+ New Utang</b> to add one.</div>';
+    } else {
+      lentList.forEach(function(u){ lentEl.appendChild(buildCard(u)); });
+    }
+    var borrEl = el("#utangIOwe"); borrEl.innerHTML = "";
+    if (!borrList.length){
+      borrEl.innerHTML = '<div class="utang-empty">Nothing here. You\'re debt-free!</div>';
+    } else {
+      borrList.forEach(function(u){ borrEl.appendChild(buildCard(u)); });
+    }
+    // Totals
+    var lentTotal  = lentList.reduce(function(a,u){ return a+utangRemaining(u); }, 0);
+    var borrTotal  = borrList.reduce(function(a,u){ return a+utangRemaining(u); }, 0);
+    var tl = el("#utangTotalLent");   if (tl) tl.textContent = lentTotal  > 0 ? fmt(lentTotal)+" outstanding"  : "";
+    var tb = el("#utangTotalBorrowed"); if (tb) tb.textContent = borrTotal > 0 ? fmt(borrTotal)+" outstanding" : "";
+  }
+
+  // ---- Add Utang modal ----
+  var utangDirVal = "lent";
+  function setUtangDir(d){
+    utangDirVal = d;
+    el("#dirLent").className     = d==="lent"     ? "on-lent"     : "";
+    el("#dirBorrowed").className = d==="borrowed" ? "on-borrowed" : "";
+  }
+  function openAddUtang(){
+    el("#utangPerson").value  = "";
+    el("#utangAmount").value  = "";
+    el("#utangDue").value     = "";
+    el("#utangNotes").value   = "";
+    el("#utangSym").textContent = sym();
+    setUtangDir("lent");
+    el("#utangScrim").classList.add("show");
+    setTimeout(function(){ el("#utangPerson").focus(); }, 60);
+  }
+  function closeAddUtang(){ el("#utangScrim").classList.remove("show"); }
+  function saveUtang(){
+    var person = el("#utangPerson").value.trim();
+    var amount = parseFloat(el("#utangAmount").value);
+    if (!person){ toast("Enter a person's name"); el("#utangPerson").focus(); return; }
+    if (!(amount > 0)){ toast("Enter an amount greater than 0"); el("#utangAmount").focus(); return; }
+    state.utangs.push({
+      id: utangId(),
+      person: person,
+      amount: Math.round(amount*100)/100,
+      direction: utangDirVal,
+      dueDate: el("#utangDue").value || "",
+      notes: el("#utangNotes").value.trim(),
+      payments: [],
+      settled: false,
+      ts: now(),
+      deleted: false
+    });
+    save(); renderUtang(); closeAddUtang();
+    toast("Utang saved ✓");
+  }
+
+  // ---- Pay modal ----
+  var _payingUtangId = null;
+  function openPayUtang(uid){
+    var u = (state.utangs||[]).filter(function(x){ return x.id===uid; })[0];
+    if (!u) return;
+    _payingUtangId = uid;
+    var rem = utangRemaining(u);
+    el("#payModalTitle").textContent = "💳 Pay — " + u.person;
+    el("#payModalSub").textContent   = (u.direction==="lent" ? "They're paying you back." : "You're paying your debt.");
+    el("#payAmount").value = "";
+    el("#paySym").textContent = sym();
+    el("#payRemaining").textContent = "Remaining balance: " + fmt(rem);
+    el("#payScrim").classList.add("show");
+    setTimeout(function(){ el("#payAmount").focus(); }, 60);
+  }
+  function closePayUtang(){ el("#payScrim").classList.remove("show"); _payingUtangId = null; }
+  function savePayment(){
+    if (!_payingUtangId) return;
+    var u = (state.utangs||[]).filter(function(x){ return x.id===_payingUtangId; })[0];
+    if (!u) return;
+    var rem = utangRemaining(u);
+    var entered = parseFloat(el("#payAmount").value);
+    if (!(entered > 0)){ toast("Enter a payment amount"); el("#payAmount").focus(); return; }
+    // Cap at remaining
+    var amount = Math.min(Math.round(entered*100)/100, Math.round(rem*100)/100);
+    if (amount < entered) toast("Capped to remaining balance: " + fmt(amount));
+
+    // Create linked main-budget transaction
+    var txnType = u.direction === "lent" ? "income" : "expense";
+    var txnDesc = u.direction === "lent"
+      ? "Utang repayment from " + u.person
+      : "Utang payment to " + u.person;
+    var txnId = id();
+    state.txns.push({
+      id: txnId, desc: txnDesc, amount: amount,
+      type: txnType, cat: u.direction==="lent" ? "Allowance & Aid" : "Other",
+      ts: now(), updated_at: now(), deleted: false
+    });
+
+    // Record payment on utang
+    u.payments.push({ id: payId(), amount: amount, ts: now(), txnId: txnId });
+
+    // Check fully settled
+    if (utangRemaining(u) <= 0.001){
+      u.settled = true;
+      save(); render(); renderUtang(); closePayUtang();
+      celebrate("🎉 Utang settled with " + u.person + "!");
+    } else {
+      save(); render(); renderUtang(); closePayUtang();
+      toast("Payment logged ✓");
+    }
+  }
+
+  // ---- Delete utang ----
+  function deleteUtang(uid){
+    if (!confirm("Delete this Utang record? This cannot be undone.")) return;
+    var u = (state.utangs||[]).filter(function(x){ return x.id===uid; })[0];
+    if (u){ u.deleted = true; }
+    save(); renderUtang();
+    toast("Utang deleted");
+  }
+
+  // ---- Paid Utangs modal ----
+  function openPaidUtangs(){
+    var settled = (state.utangs||[]).filter(function(u){ return u.settled && !u.deleted; });
+    var list = el("#paidList"); list.innerHTML = "";
+    if (!settled.length){
+      list.innerHTML = '<div style="color:var(--muted);font-size:14px;padding:12px 0">No settled Utangs yet.</div>';
+    } else {
+      settled.forEach(function(u){
+        var paid = utangPaid(u);
+        var card = document.createElement("div");
+        card.className = "paid-card";
+        card.innerHTML =
+          '<div class="paid-card-top">'+
+            '<div class="paid-person">'+
+              '<span class="dir-badge '+(u.direction==="lent"?"lent":"borrowed")+'">'+(u.direction==="lent"?"Lent":"Borrowed")+'</span>'+
+              esc(u.person)+
+            '</div>'+
+            '<span class="paid-badge">✅ Paid</span>'+
+          '</div>'+
+          '<div class="paid-summary">'+fmt(paid)+' paid · '+u.payments.length+' payment'+(u.payments.length===1?"":"s")+' · Total: '+fmt(u.amount)+'</div>';
+        list.appendChild(card);
+      });
+    }
+    el("#paidScrim").classList.add("show");
+  }
+  function closePaidUtangs(){ el("#paidScrim").classList.remove("show"); }
+
+  // ---- Tab switching ----
+  var _utangTabActive = false;
+  function showUtangTab(){
+    _utangTabActive = true;
+    el("main").style.display = "none";
+    el("#utangSection").style.display = "block";
+    el("#tabHome").classList.remove("active");
+    el("#tabUtang").classList.add("active");
+    renderUtang();
+  }
+  function showHomeTab(){
+    _utangTabActive = false;
+    el("main").style.display = "";
+    el("#utangSection").style.display = "none";
+    el("#tabHome").classList.add("active");
+    el("#tabUtang").classList.remove("active");
+  }
+
   // ---------- Wire up ----------
   el("#addForm").addEventListener("submit", addTxn);
   el("#btnExp").addEventListener("click", function(){ setType("expense"); updateSuggest(); });
@@ -1360,7 +1825,12 @@
   el("#achClose").addEventListener("click", closeAchievements);
   el("#achDone").addEventListener("click", closeAchievements);
   el("#achScrim").addEventListener("click", function(e){ if (e.target === this) closeAchievements(); });
-  document.addEventListener("keydown", function(e){ if (e.key === "Escape"){ closeGoals(); closeAllowance(); closeAchievements(); } });
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape"){
+      closeGoals(); closeAllowance(); closeAchievements();
+      closeAddUtang(); closePayUtang(); closePaidUtangs();
+    }
+  });
   el("#clearAll").addEventListener("click", clearAll);
   var syncFn = function(){ save(); toast("Saved to this device ✓"); };
   el("#syncBtn").addEventListener("click", syncFn);
@@ -1613,11 +2083,29 @@
   el("#tabbar").addEventListener("click", function(e){
     var b = e.target.closest("button"); if (!b) return;
     var act = b.getAttribute("data-act");
-    if (act === "home") window.scrollTo({ top: 0, behavior: "smooth" });
+    if (act === "home")   { showHomeTab(); window.scrollTo({ top: 0, behavior: "smooth" }); }
+    else if (act === "utang")   showUtangTab();
     else if (act === "rewards") openAchievements();
-    else if (act === "logout") logout();
-    else if (act === "gcash") openGcashSetup();
+    else if (act === "logout")  logout();
+    else if (act === "gcash")   openGcashSetup();
   });
+
+  // Utang event wiring
+  el("#addUtangBtn").addEventListener("click", openAddUtang);
+  el("#utangClose").addEventListener("click", closeAddUtang);
+  el("#utangCancel").addEventListener("click", closeAddUtang);
+  el("#utangSave").addEventListener("click", saveUtang);
+  el("#utangScrim").addEventListener("click", function(e){ if (e.target===this) closeAddUtang(); });
+  el("#dirLent").addEventListener("click", function(){ setUtangDir("lent"); });
+  el("#dirBorrowed").addEventListener("click", function(){ setUtangDir("borrowed"); });
+  el("#payClose").addEventListener("click", closePayUtang);
+  el("#payCancel").addEventListener("click", closePayUtang);
+  el("#paySave").addEventListener("click", savePayment);
+  el("#payScrim").addEventListener("click", function(e){ if (e.target===this) closePayUtang(); });
+  el("#settledBtn").addEventListener("click", openPaidUtangs);
+  el("#paidClose").addEventListener("click", closePaidUtangs);
+  el("#paidDone").addEventListener("click", closePaidUtangs);
+  el("#paidScrim").addEventListener("click", function(e){ if (e.target===this) closePaidUtangs(); });
 
   // Show the runtime platform on the build badge (diagnostic)
   try {
