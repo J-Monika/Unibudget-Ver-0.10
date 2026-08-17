@@ -111,6 +111,15 @@
           balances[t.toWalletId].transfersIn += amt;
           balances[t.toWalletId].balance += amt;
         }
+      } else if (t.type === "adjustment") {
+        if (balances[t.walletId]) {
+          var isInc = t.direction === "increase" || t.direction === "in";
+          if (isInc) {
+            balances[t.walletId].balance += amt;
+          } else {
+            balances[t.walletId].balance -= amt;
+          }
+        }
       }
     });
 

@@ -40,6 +40,32 @@ test('computeWalletBalances correctly computes starting balance, income, expense
   assert.equal(total, 1535);
 });
 
+test('computeWalletBalances correctly handles non-budget adjustment without altering income/expense', () => {
+  const wallets = [
+    { id: 'w-cash', name: 'Cash', initialBalance: 1000 },
+    { id: 'w-gcash', name: 'GCash', initialBalance: 2000 }
+  ];
+  const txns = [
+    { id: 't-adj-down', type: 'adjustment', direction: 'decrease', amount: 200, walletId: 'w-cash', deleted: false },
+    { id: 't-adj-up', type: 'adjustment', direction: 'increase', amount: 150, walletId: 'w-gcash', deleted: false }
+  ];
+
+  const balances = computeWalletBalances(wallets, txns);
+  // Cash: 1000 - 200 = 800
+  assert.equal(balances['w-cash'].balance, 800);
+  assert.equal(balances['w-cash'].expense, 0); // MUST NOT count as expense
+  assert.equal(balances['w-cash'].income, 0);
+
+  // GCash: 2000 + 150 = 2150
+  assert.equal(balances['w-gcash'].balance, 2150);
+  assert.equal(balances['w-gcash'].income, 0); // MUST NOT count as income
+  assert.equal(balances['w-gcash'].expense, 0);
+
+  // Total net worth: 800 + 2150 = 2950
+  const total = computeTotalNetWorth(wallets, txns);
+  assert.equal(total, 2950);
+});
+
 test('migrateTransactions backfills missing walletId appropriately', () => {
   const legacyTxns = [
     { id: 't1', desc: 'Jollibee', amount: 100 },

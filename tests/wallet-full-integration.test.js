@@ -89,14 +89,17 @@ test('Full workflow: starting balance + income + expense + transfer + reconcile'
     id: 't-rec-1',
     desc: 'Balance Adjustment (Cash)',
     amount: 50,
-    type: 'expense',
-    cat: 'Other',
+    type: 'adjustment',
+    direction: 'decrease',
+    cat: 'Adjustment',
     walletId: 'w-cash',
     deleted: false
   });
 
   balances = computeWalletBalances(wallets, txns);
   assert.equal(balances['w-cash'].balance, 450);
+  assert.equal(balances['w-cash'].expense, 0); // Must NOT be counted as expense
+  assert.equal(balances['w-cash'].income, 0);
   assert.equal(balances['w-seabank'].balance, 3000);
   // Total net worth: 16435 + 3000 - 50 = 19385
   assert.equal(computeTotalNetWorth(wallets, txns), 19385);

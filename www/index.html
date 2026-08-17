@@ -318,12 +318,15 @@
   .txn .ic.inc { background: var(--income-soft); color: var(--income); }
   .txn .ic.exp { background: var(--spent-soft); color: var(--spent); }
   .txn .ic.utang { background: #452b05; color: #fbbf24; font-size: 20px; }
+  .txn .ic.trf { background: rgba(99, 102, 241, 0.15); color: #818cf8; font-size: 17px; }
+  .txn .ic.adj { background: rgba(148, 163, 184, 0.15); color: #94a3b8; font-size: 16px; }
   .txn .desc { min-width: 0; flex: 1; }
   .txn .desc .t { font-weight: 700; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #fff; }
   .txn .desc .s { font-size: 12px; color: var(--muted); margin-top: 1px; }
   .txn .amt { margin-left: auto; font-weight: 800; font-size: 14.5px; white-space: nowrap; flex-shrink: 0; }
   .txn .amt.inc { color: var(--income); }
   .txn .amt.exp { color: var(--ink); }
+  .txn .amt.adj { color: #94a3b8; }
   .txn .del {
     border: 0; background: transparent; cursor: pointer; color: var(--muted);
     padding: 6px; border-radius: 8px; display: grid; place-items: center; line-height: 0;
@@ -1632,7 +1635,8 @@
       sorted.forEach(function(t){
         var isInc = t.type === "income";
         var isTrf = t.type === "transfer";
-        var isUtang = !!t.isUtangOrigin || (typeof t.sub === "string" && t.sub.indexOf("Utang -") === 0);
+        var isAdj = t.type === "adjustment";
+        var isUtang = !isAdj && (!isTrf) && (!!t.isUtangOrigin || (typeof t.sub === "string" && t.sub.indexOf("Utang -") === 0));
 
         var wSrc = getWalletById(t.walletId);
         var wDst = t.toWalletId ? getWalletById(t.toWalletId) : null;
@@ -1640,6 +1644,8 @@
         var iconHtml = "";
         if (isTrf) {
           iconHtml = '<div class="ic trf">🔄</div>';
+        } else if (isAdj) {
+          iconHtml = '<div class="ic adj">⚖️</div>';
         } else if (isUtang) {
           iconHtml = '<div class="ic utang">−</div>';
         } else {
@@ -1650,16 +1656,18 @@
           ? '<span class="txn-wbadge" style="color:'+wSrc.color+';border-color:'+wSrc.color+'40">'+wSrc.icon+' '+esc(wSrc.name)+'</span><span style="font-size:11px;color:var(--muted)">→</span><span class="txn-wbadge" style="color:'+wDst.color+';border-color:'+wDst.color+'40">'+wDst.icon+' '+esc(wDst.name)+'</span>'
           : '<span class="txn-wbadge" style="color:'+wSrc.color+';border-color:'+wSrc.color+'40">'+wSrc.icon+' '+esc(wSrc.name)+'</span>';
 
+        var isAdjInc = isAdj && (t.direction === "increase" || t.direction === "in");
+
         var titleText = isTrf
           ? ("Transfer: " + esc(wSrc.name) + " → " + esc(wDst.name))
-          : esc(t.desc);
+          : (isAdj ? ("Balance Adjustment (" + esc(wSrc.name) + ")") : esc(t.desc));
 
         var subText = isTrf
           ? (t.fee > 0 ? ("Fee: " + fmt(t.fee) + (t.desc ? " · " + esc(t.desc) : "")) : (t.desc || "Account transfer"))
-          : (t.sub || t.cat);
+          : (isAdj ? ("Balance adjustment · " + (isAdjInc ? "Added" : "Deducted")) : (t.sub || t.cat));
 
-        var amtClass = isTrf ? "" : (isInc ? "inc" : "exp");
-        var amtPrefix = isTrf ? "" : (isInc ? "+" : "−");
+        var amtClass = isTrf ? "" : (isAdj ? "adj" : (isInc ? "inc" : "exp"));
+        var amtPrefix = isTrf ? "" : (isAdj ? (isAdjInc ? "+" : "−") : (isInc ? "+" : "−"));
         if (isTrf && selectedWalletFilter) {
           if (t.walletId === selectedWalletFilter) { amtPrefix = "−"; amtClass = "exp"; }
           else if (t.toWalletId === selectedWalletFilter) { amtPrefix = "+"; amtClass = "inc"; }
@@ -1917,8 +1925,9 @@
       id: id(),
       desc: "Balance Adjustment (" + targetW.name + ")",
       amount: Math.abs(diff),
-      type: isGain ? "income" : "expense",
-      cat: "Other",
+      type: "adjustment",
+      direction: isGain ? "increase" : "decrease",
+      cat: "Adjustment",
       walletId: wid,
       ts: now(),
       updated_at: now(),
