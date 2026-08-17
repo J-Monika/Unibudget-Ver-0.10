@@ -147,6 +147,7 @@
   .bal-eyebrow {
     font-size: 13.5px; font-weight: 700; color: var(--muted);
     letter-spacing: .02em; margin-bottom: 4px;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
   }
   .bal-big {
     font-size: clamp(32px, 9vw, 44px);
@@ -161,6 +162,77 @@
   .bal-subrow .in { color: var(--income); }
   .bal-subrow .sp { color: var(--spent); }
   .bal-subrow .lab { color: var(--muted); font-weight: 600; margin-right: 4px; }
+
+  /* ---------- Multi-Wallet Carousel & Cards ---------- */
+  .wallets-section {
+    width: 100%; box-sizing: border-box; margin-top: -4px;
+  }
+  .wallets-carousel {
+    display: flex; gap: 10px; overflow-x: auto; padding: 4px 2px 10px;
+    scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+  }
+  .wallets-carousel::-webkit-scrollbar { display: none; }
+  .wallets-carousel { -ms-overflow-style: none; scrollbar-width: none; }
+
+  .wallet-card {
+    flex: 0 0 140px; scroll-snap-align: start;
+    background: var(--card); border: 1.5px solid var(--line); border-radius: 16px;
+    padding: 12px 14px; cursor: pointer; transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+    display: flex; flex-direction: column; justify-content: space-between; min-height: 84px;
+    position: relative; user-select: none; box-sizing: border-box;
+  }
+  .wallet-card:hover { transform: translateY(-2px); border-color: var(--muted); }
+  .wallet-card.active {
+    border-color: var(--w-accent, var(--accent));
+    background: linear-gradient(180deg, var(--w-soft, var(--accent-soft)), var(--card));
+    box-shadow: 0 4px 16px var(--w-glow, rgba(99,102,241,.25));
+  }
+  .wallet-card-top { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+  .wallet-card-brand { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 13px; color: var(--ink); }
+  .wallet-card-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--w-accent, var(--accent)); flex-shrink: 0; }
+  .wallet-card-bal { font-size: 14.5px; font-weight: 800; color: #fff; margin-top: 8px; white-space: nowrap; }
+  .wallet-card-all { flex: 0 0 110px; text-align: center; justify-content: center; }
+  .wallet-card-add {
+    flex: 0 0 96px; border: 1.5px dashed var(--line); background: transparent;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: var(--muted); font-size: 12px; font-weight: 700; gap: 4px; cursor: pointer;
+  }
+  .wallet-card-add:hover { border-color: var(--accent); color: var(--accent); }
+
+  .wallet-quick-actions {
+    display: flex; gap: 8px; margin-top: 4px; justify-content: flex-end; align-items: center;
+  }
+  .w-action-btn {
+    border: 1px solid var(--line); background: var(--card); color: var(--ink-soft);
+    font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 10px;
+    cursor: pointer; display: inline-flex; align-items: center; gap: 5px; font-family: inherit;
+    transition: background .15s, color .15s, border-color .15s;
+  }
+  .w-action-btn:hover { background: var(--card-elevated); color: #fff; border-color: var(--muted); }
+  .active-wallet-pill {
+    font-size: 11px; font-weight: 800; color: var(--w-accent, var(--accent));
+    background: var(--w-soft, var(--accent-soft)); padding: 2px 8px; border-radius: 999px;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .active-wallet-pill .x-filter { cursor: pointer; margin-left: 3px; font-size: 10px; opacity: .8; }
+  .active-wallet-pill .x-filter:hover { opacity: 1; }
+
+  /* Wallet Badge on Transactions */
+  .txn-wbadge {
+    font-size: 10.5px; font-weight: 700; padding: 1.5px 6px; border-radius: 6px;
+    background: var(--page); border: 1px solid var(--line); color: var(--muted);
+    display: inline-flex; align-items: center; gap: 3px; margin-right: 4px;
+  }
+  .txn .ic.trf { background: rgba(99,102,241,.18); color: #a5b4fc; font-size: 15px; }
+
+  /* Color preset selector */
+  .color-palette { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+  .color-dot-btn {
+    width: 28px; height: 28px; border-radius: 50%; border: 2px solid transparent;
+    cursor: pointer; transition: transform .15s, border-color .15s;
+  }
+  .color-dot-btn:hover { transform: scale(1.15); }
+  .color-dot-btn.selected { border-color: #fff; box-shadow: 0 0 0 2px var(--accent); }
 
   /* ---------- Interactive Donut Chart Card ---------- */
   .chart-card {
@@ -701,11 +773,20 @@
   <div class="feed">
     <!-- 1. TOTAL BALANCE CARD -->
     <section class="card balance-card">
-      <div class="bal-eyebrow">Total Balance:</div>
+      <div class="bal-eyebrow" id="balEyebrow"><span>Total Balance:</span></div>
       <div class="bal-big num" id="balance">₱0.00</div>
       <div class="bal-subrow">
         <span class="in"><span class="lab">Income:</span><b class="num" id="income">+₱0.00</b></span>
         <span class="sp"><span class="lab">Spent:</span><b class="num" id="spent">-₱0.00</b></span>
+      </div>
+    </section>
+
+    <!-- MULTI-WALLET CAROUSEL -->
+    <section class="wallets-section" id="walletsSection">
+      <div class="wallets-carousel" id="walletCarousel"></div>
+      <div class="wallet-quick-actions">
+        <button type="button" class="w-action-btn" id="btnQuickTransfer"><span>🔄</span> Transfer</button>
+        <button type="button" class="w-action-btn" id="btnQuickReconcile"><span>⚖️</span> Reconcile</button>
       </div>
     </section>
 
@@ -770,6 +851,10 @@
         <button type="button" id="applySuggest">Use</button>
       </div>
       <div class="field">
+        <label for="txnWallet">Account / Wallet</label>
+        <select id="txnWallet" class="f"></select>
+      </div>
+      <div class="field">
         <label for="amount">Amount</label>
         <div class="amt-wrap">
           <span class="sym" id="amtSym">₱</span>
@@ -788,6 +873,125 @@
         <select id="category" class="f"></select>
       </div>
       <button type="submit" class="submit">Save Transaction</button>
+    </form>
+  </div>
+</div>
+
+<!-- ============ WALLET TRANSFER MODAL ============ -->
+<div class="scrim" id="transferScrim">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="trTitle">
+    <div class="modal-head">
+      <div>
+        <h3 id="trTitle">🔄 Transfer Money</h3>
+        <p>Move funds between your accounts.</p>
+      </div>
+      <button class="x" id="closeTransfer" aria-label="Close">✕</button>
+    </div>
+    <form id="transferForm" autocomplete="off">
+      <div class="field">
+        <label for="trFrom">From Account</label>
+        <select id="trFrom" class="f"></select>
+      </div>
+      <div class="field">
+        <label for="trTo">To Account</label>
+        <select id="trTo" class="f"></select>
+      </div>
+      <div class="field">
+        <label for="trAmount">Transfer Amount</label>
+        <div class="amt-wrap">
+          <span class="sym" id="trSym">₱</span>
+          <input id="trAmount" class="num" type="number" min="0.01" step="0.01" placeholder="0.00" />
+        </div>
+      </div>
+      <div class="field">
+        <label for="trFee">Transfer Fee <span style="font-weight:500;color:var(--muted)">(InstaPay / Cash-In)</span></label>
+        <div class="amt-wrap">
+          <span class="sym" id="trFeeSym">₱</span>
+          <input id="trFee" class="num" type="number" min="0" step="1" placeholder="0.00" />
+        </div>
+      </div>
+      <div class="field">
+        <label for="trNote">Note / Reference <span style="font-weight:500;color:var(--muted)">(optional)</span></label>
+        <input id="trNote" type="text" placeholder="e.g. Allowance cash-in, ATM cash-out" />
+      </div>
+      <button type="submit" class="submit" id="btnSubmitTransfer">Execute Transfer</button>
+    </form>
+  </div>
+</div>
+
+<!-- ============ BALANCE RECONCILE MODAL ============ -->
+<div class="scrim" id="reconcileScrim">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="recTitle">
+    <div class="modal-head">
+      <div>
+        <h3 id="recTitle">⚖️ Reconcile Balance</h3>
+        <p>Match your app balance to your actual real-world money.</p>
+      </div>
+      <button class="x" id="closeReconcile" aria-label="Close">✕</button>
+    </div>
+    <form id="reconcileForm" autocomplete="off">
+      <div class="field">
+        <label for="recWallet">Select Account</label>
+        <select id="recWallet" class="f"></select>
+      </div>
+      <div class="field">
+        <label>System Calculated Balance</label>
+        <div style="font-size:18px;font-weight:800;color:#fff;padding:4px 0" id="recCalcBal">₱0.00</div>
+      </div>
+      <div class="field">
+        <label for="recActual">Actual Real-World Balance</label>
+        <div class="amt-wrap">
+          <span class="sym" id="recSym">₱</span>
+          <input id="recActual" class="num" type="number" step="0.01" placeholder="0.00" />
+        </div>
+      </div>
+      <div id="recDiffWrap" style="font-size:13px;font-weight:700;color:var(--muted);margin-top:-4px;min-height:20px"></div>
+      <button type="submit" class="submit" id="btnSubmitReconcile">Save Adjustment</button>
+    </form>
+  </div>
+</div>
+
+<!-- ============ ADD/EDIT WALLET MODAL ============ -->
+<div class="scrim" id="walletModalScrim">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="wmTitle">
+    <div class="modal-head">
+      <div>
+        <h3 id="wmTitle">➕ Add New Account</h3>
+        <p>Track e-wallets, banks, or cash envelopes.</p>
+      </div>
+      <button class="x" id="closeWalletModal" aria-label="Close">✕</button>
+    </div>
+    <form id="walletForm" autocomplete="off">
+      <div class="field">
+        <label for="wmName">Account Name</label>
+        <input id="wmName" type="text" placeholder="e.g. SeaBank, BPI, ShopeePay" required />
+      </div>
+      <div class="field">
+        <label for="wmType">Account Type</label>
+        <select id="wmType" class="f">
+          <option value="ewallet">Mobile E-Wallet</option>
+          <option value="bank">Digital / Traditional Bank</option>
+          <option value="cash">Physical Cash</option>
+          <option value="other">Other Account</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="wmIcon">Emoji Icon</label>
+        <input id="wmIcon" type="text" placeholder="e.g. 🏦, 💳, 🪙" maxlength="4" value="💳" />
+      </div>
+      <div class="field">
+        <label>Color Theme</label>
+        <div class="color-palette" id="wmColorPalette"></div>
+        <input type="hidden" id="wmColor" value="#007dfe" />
+      </div>
+      <div class="field">
+        <label for="wmInitial">Starting Balance</label>
+        <div class="amt-wrap">
+          <span class="sym" id="wmSym">₱</span>
+          <input id="wmInitial" class="num" type="number" min="0" step="0.01" placeholder="0.00" />
+        </div>
+      </div>
+      <button type="submit" class="submit" id="btnSaveWallet">Save Account</button>
     </form>
   </div>
 </div>
@@ -1265,34 +1469,126 @@
     svg.appendChild(centerG);
   }
 
-  // ---------- Render ----------
-  function activeTxns(){ return state.txns.filter(function(t){ return !t.deleted; }); }
-  function render(){
-    var income = 0, spent = 0, perCat = {};
-    activeTxns().forEach(function(t){
-      if (t.type === "income") income += t.amount;
-      else { spent += t.amount; perCat[t.cat] = (perCat[t.cat]||0) + t.amount; }
+  // ---------- Wallet State & Helpers ----------
+  var selectedWalletFilter = null;
+
+  function getWalletById(wid){
+    var list = (state && state.wallets) || [];
+    for (var i=0; i<list.length; i++) {
+      if (list[i].id === wid) return list[i];
+    }
+    return { id: wid || "w-cash", name: "Wallet", icon: "💳", color: "#6366f1", type: "other" };
+  }
+
+  function renderWalletCarousel(balances){
+    var car = el("#walletCarousel");
+    if (!car) return;
+    car.innerHTML = "";
+
+    // 1. All Wallets Card
+    var totalNet = window.WalletEngine ? WalletEngine.computeTotalNetWorth(state.wallets, state.txns) : 0;
+    var allCard = document.createElement("div");
+    allCard.className = "wallet-card wallet-card-all" + (selectedWalletFilter === null ? " active" : "");
+    allCard.innerHTML =
+      '<div class="wallet-card-brand" style="justify-content:center"><span>🌐</span><span>All</span></div>'+
+      '<div class="wallet-card-bal">' + fmt(totalNet) + '</div>';
+    allCard.addEventListener("click", function(){
+      selectedWalletFilter = null;
+      render();
     });
-    var balance = income - spent;
+    car.appendChild(allCard);
 
-    // Total Balance Card
+    // 2. Individual Wallets
+    (state.wallets || []).forEach(function(w){
+      var bInfo = balances[w.id] || { balance: w.initialBalance || 0 };
+      var isAct = selectedWalletFilter === w.id;
+      var wCard = document.createElement("div");
+      wCard.className = "wallet-card" + (isAct ? " active" : "");
+      wCard.style.setProperty("--w-accent", w.color);
+      wCard.style.setProperty("--w-soft", w.color + "22");
+      wCard.style.setProperty("--w-glow", w.color + "40");
+      wCard.innerHTML =
+        '<div class="wallet-card-top">'+
+          '<div class="wallet-card-brand"><span class="wallet-card-dot" style="background:' + w.color + '"></span><span>' + w.icon + ' ' + esc(w.name) + '</span></div>'+
+        '</div>'+
+        '<div class="wallet-card-bal">' + fmt(bInfo.balance) + '</div>';
+      wCard.addEventListener("click", function(){
+        selectedWalletFilter = isAct ? null : w.id;
+        render();
+      });
+      car.appendChild(wCard);
+    });
+
+    // 3. Add Custom Wallet Card
+    var addCard = document.createElement("div");
+    addCard.className = "wallet-card wallet-card-add";
+    addCard.innerHTML = '<span style="font-size:18px">➕</span><span>New Account</span>';
+    addCard.addEventListener("click", openWalletModal);
+    car.appendChild(addCard);
+  }
+
+  // ---------- Render ----------
+  function activeTxns(){ return (state && state.txns) ? state.txns.filter(function(t){ return !t.deleted; }) : []; }
+  function filteredTxns(){
+    var all = activeTxns();
+    if (!selectedWalletFilter) return all;
+    return all.filter(function(t){
+      return t.walletId === selectedWalletFilter || (t.type === "transfer" && t.toWalletId === selectedWalletFilter);
+    });
+  }
+
+  function render(){
+    if (!state) return;
+    var balances = window.WalletEngine ? WalletEngine.computeWalletBalances(state.wallets, state.txns) : {};
+    var totalNet = window.WalletEngine ? WalletEngine.computeTotalNetWorth(state.wallets, state.txns) : 0;
+
+    renderWalletCarousel(balances);
+
     var balEl = el("#balance");
-    balEl.textContent = fmt(balance);
-    balEl.classList.toggle("neg", balance < 0);
-    el("#income").textContent = "+" + fmt(income).replace("−","");
-    el("#spent").textContent = "-" + fmt(spent).replace("−","");
+    var eyebrowEl = el("#balEyebrow");
 
-    // Total Budget computation
+    if (selectedWalletFilter && balances[selectedWalletFilter]) {
+      var actW = getWalletById(selectedWalletFilter);
+      var wBal = balances[selectedWalletFilter].balance;
+      eyebrowEl.innerHTML = '<span>' + esc(actW.name) + ' Balance:</span><span class="active-wallet-pill" style="--w-accent:'+actW.color+';--w-soft:'+actW.color+'26">' + actW.icon + ' Filtered <span class="x-filter" id="clearFilterBtn" title="Clear filter">✕</span></span>';
+      var cfb = el("#clearFilterBtn");
+      if (cfb) cfb.addEventListener("click", function(e){ e.stopPropagation(); selectedWalletFilter = null; render(); });
+      balEl.textContent = fmt(wBal);
+      balEl.classList.toggle("neg", wBal < 0);
+      el("#income").textContent = "+" + fmt(balances[selectedWalletFilter].income).replace("−","");
+      el("#spent").textContent = "-" + fmt(balances[selectedWalletFilter].expense).replace("−","");
+    } else {
+      eyebrowEl.innerHTML = '<span>Total Net Worth:</span>';
+      balEl.textContent = fmt(totalNet);
+      balEl.classList.toggle("neg", totalNet < 0);
+      var globIncome = 0, globSpent = 0;
+      activeTxns().forEach(function(t){
+        if (t.type === "income") globIncome += t.amount;
+        else if (t.type === "expense") globSpent += t.amount;
+        else if (t.type === "transfer" && t.fee > 0) globSpent += t.fee;
+      });
+      el("#income").textContent = "+" + fmt(globIncome).replace("−","");
+      el("#spent").textContent = "-" + fmt(globSpent).replace("−","");
+    }
+
+    // Donut chart & Categories breakdown
+    var spent = 0, perCat = {};
+    var txList = filteredTxns();
+    txList.forEach(function(t){
+      if (t.type === "expense") {
+        spent += t.amount;
+        perCat[t.cat] = (perCat[t.cat] || 0) + t.amount;
+      } else if (t.type === "transfer" && t.fee > 0 && (!selectedWalletFilter || t.walletId === selectedWalletFilter)) {
+        spent += t.fee;
+        perCat["Other"] = (perCat["Other"] || 0) + t.fee;
+      }
+    });
+
     var totalBudget = 0;
     EXPENSE_CATS.forEach(function(c){ totalBudget += (state.limits[c.name] || 0); });
-    if (totalBudget <= 0 && state.allowance && state.allowance.amount > 0) {
-      totalBudget = state.allowance.amount;
-    }
-    if (totalBudget <= 0) {
-      totalBudget = spent > 0 ? spent : 2500;
-    }
+    if (totalBudget <= 0 && state.allowance && state.allowance.amount > 0) totalBudget = state.allowance.amount;
+    if (totalBudget <= 0) totalBudget = spent > 0 ? spent : 2500;
 
-    // Donut Chart
     renderDonutChart(perCat, spent, totalBudget);
 
     // Categories Breakdown
@@ -1329,24 +1625,55 @@
 
     // Recent Transactions
     var tx = el("#txns"); tx.innerHTML = "";
-    var list = activeTxns();
-    if (!list.length){
-      tx.innerHTML = '<div class="empty"><div class="big">🧾</div>No transactions yet.<br>Tap <b>+</b> to add your first record.</div>';
+    if (!txList.length){
+      tx.innerHTML = '<div class="empty"><div class="big">🧾</div>No transactions ' + (selectedWalletFilter ? 'for this account.' : 'yet.') + '<br>Tap <b>+</b> to add a record.</div>';
     } else {
-      var sorted = list.slice().sort(function(a,b){ return b.ts - a.ts; });
+      var sorted = txList.slice().sort(function(a,b){ return b.ts - a.ts; });
       sorted.forEach(function(t){
         var isInc = t.type === "income";
+        var isTrf = t.type === "transfer";
         var isUtang = !!t.isUtangOrigin || (typeof t.sub === "string" && t.sub.indexOf("Utang -") === 0);
-        var iconHtml = isUtang
-          ? '<div class="ic utang">−</div>'
-          : '<div class="ic '+(isInc?"inc":"exp")+'">'+(isInc?"↓":"↑")+'</div>';
-        var subText = t.sub || t.cat;
+
+        var wSrc = getWalletById(t.walletId);
+        var wDst = t.toWalletId ? getWalletById(t.toWalletId) : null;
+
+        var iconHtml = "";
+        if (isTrf) {
+          iconHtml = '<div class="ic trf">🔄</div>';
+        } else if (isUtang) {
+          iconHtml = '<div class="ic utang">−</div>';
+        } else {
+          iconHtml = '<div class="ic '+(isInc?"inc":"exp")+'">'+(isInc?"↓":"↑")+'</div>';
+        }
+
+        var wBadge = isTrf
+          ? '<span class="txn-wbadge" style="color:'+wSrc.color+';border-color:'+wSrc.color+'40">'+wSrc.icon+' '+esc(wSrc.name)+'</span><span style="font-size:11px;color:var(--muted)">→</span><span class="txn-wbadge" style="color:'+wDst.color+';border-color:'+wDst.color+'40">'+wDst.icon+' '+esc(wDst.name)+'</span>'
+          : '<span class="txn-wbadge" style="color:'+wSrc.color+';border-color:'+wSrc.color+'40">'+wSrc.icon+' '+esc(wSrc.name)+'</span>';
+
+        var titleText = isTrf
+          ? ("Transfer: " + esc(wSrc.name) + " → " + esc(wDst.name))
+          : esc(t.desc);
+
+        var subText = isTrf
+          ? (t.fee > 0 ? ("Fee: " + fmt(t.fee) + (t.desc ? " · " + esc(t.desc) : "")) : (t.desc || "Account transfer"))
+          : (t.sub || t.cat);
+
+        var amtClass = isTrf ? "" : (isInc ? "inc" : "exp");
+        var amtPrefix = isTrf ? "" : (isInc ? "+" : "−");
+        if (isTrf && selectedWalletFilter) {
+          if (t.walletId === selectedWalletFilter) { amtPrefix = "−"; amtClass = "exp"; }
+          else if (t.toWalletId === selectedWalletFilter) { amtPrefix = "+"; amtClass = "inc"; }
+        }
+
         var row = document.createElement("div");
         row.className = "txn";
         row.innerHTML =
           iconHtml+
-          '<div class="desc"><div class="t">'+esc(t.desc)+'</div><div class="s">'+esc(subText)+'</div></div>'+
-          '<div class="amt num '+(isInc?"inc":"exp")+'">'+(isInc?"+":"−")+fmt(t.amount).replace("−","")+'</div>'+
+          '<div class="desc">'+
+            '<div class="t">'+titleText+'</div>'+
+            '<div class="s">' + wBadge + ' ' + esc(subText) + '</div>'+
+          '</div>'+
+          '<div class="amt num '+amtClass+'">'+amtPrefix+fmt(t.amount).replace("−","")+'</div>'+
           '<button class="del" title="Delete" aria-label="Delete transaction">'+
             '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>'+
           '</button>';
@@ -1362,7 +1689,7 @@
 
   function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]; }); }
 
-  // ---------- Category dropdown ----------
+  // ---------- Dropdowns & Modals ----------
   function fillCategories(){
     var sel = el("#category");
     var list = typeVal === "income" ? INCOME_CATS : EXPENSE_CATS;
@@ -1376,9 +1703,73 @@
     if (prev && list.some(function(c){ return c.name === prev; })) sel.value = prev;
   }
 
+  function fillWalletDropdowns(){
+    var wallets = (state && state.wallets) || [];
+    var balances = window.WalletEngine ? WalletEngine.computeWalletBalances(wallets, state.txns) : {};
+
+    // 1. Transaction form dropdown
+    var tw = el("#txnWallet");
+    if (tw) {
+      var prevTw = tw.value;
+      tw.innerHTML = "";
+      wallets.forEach(function(w){
+        var o = document.createElement("option");
+        o.value = w.id;
+        o.textContent = w.icon + "  " + w.name + " (" + fmt((balances[w.id]||{}).balance || 0) + ")";
+        tw.appendChild(o);
+      });
+      if (selectedWalletFilter && wallets.some(function(w){ return w.id === selectedWalletFilter; })) {
+        tw.value = selectedWalletFilter;
+      } else if (prevTw && wallets.some(function(w){ return w.id === prevTw; })) {
+        tw.value = prevTw;
+      }
+    }
+
+    // 2. Transfer dropdowns
+    var tFrom = el("#trFrom");
+    var tTo = el("#trTo");
+    if (tFrom && tTo) {
+      tFrom.innerHTML = ""; tTo.innerHTML = "";
+      wallets.forEach(function(w){
+        var o1 = document.createElement("option");
+        o1.value = w.id;
+        o1.textContent = w.icon + "  " + w.name + " (" + fmt((balances[w.id]||{}).balance || 0) + ")";
+        tFrom.appendChild(o1);
+
+        var o2 = document.createElement("option");
+        o2.value = w.id;
+        o2.textContent = w.icon + "  " + w.name;
+        tTo.appendChild(o2);
+      });
+      if (wallets.length >= 2) {
+        if (selectedWalletFilter) {
+          tFrom.value = selectedWalletFilter;
+          tTo.value = wallets.filter(function(w){ return w.id !== selectedWalletFilter; })[0].id;
+        } else {
+          tFrom.selectedIndex = 0;
+          tTo.selectedIndex = 1;
+        }
+      }
+    }
+
+    // 3. Reconcile dropdown
+    var rw = el("#recWallet");
+    if (rw) {
+      rw.innerHTML = "";
+      wallets.forEach(function(w){
+        var o = document.createElement("option");
+        o.value = w.id;
+        o.textContent = w.icon + "  " + w.name;
+        rw.appendChild(o);
+      });
+      if (selectedWalletFilter) rw.value = selectedWalletFilter;
+    }
+  }
+
   // ---------- Add Transaction Modal & Actions ----------
   function openAddModal(){
     fillCategories();
+    fillWalletDropdowns();
     el("#desc").value = "";
     el("#amount").value = "";
     el("#suggest").classList.remove("show");
@@ -1394,9 +1785,20 @@
     var desc = el("#desc").value.trim();
     var amount = parseFloat(el("#amount").value);
     var cat = el("#category").value;
+    var walletId = el("#txnWallet").value || "w-cash";
     if (!desc){ toast("Add a description first"); el("#desc").focus(); return; }
     if (!(amount > 0)){ toast("Enter an amount greater than 0"); el("#amount").focus(); return; }
-    state.txns.push({ id:id(), desc:desc, amount:Math.round(amount*100)/100, type:typeVal, cat:cat, ts:now(), updated_at:now(), deleted:false });
+    state.txns.push({
+      id: id(),
+      desc: desc,
+      amount: Math.round(amount*100)/100,
+      type: typeVal,
+      cat: cat,
+      walletId: walletId,
+      ts: now(),
+      updated_at: now(),
+      deleted: false
+    });
     save(); render();
     closeAddModal();
     toast(typeVal === "income" ? "Income added ✓" : "Expense added ✓");
@@ -1415,6 +1817,174 @@
     state.txns.forEach(function(t){ if (!t.deleted){ t.deleted = true; t.updated_at = now(); } });
     save(); render();
     toast("All transactions cleared");
+  }
+
+  // ---------- Wallet Transfer Modal ----------
+  function openTransfer(){
+    fillWalletDropdowns();
+    el("#trAmount").value = "";
+    el("#trFee").value = "";
+    el("#trNote").value = "";
+    el("#trSym").textContent = sym();
+    el("#trFeeSym").textContent = sym();
+    el("#transferScrim").classList.add("show");
+    setTimeout(function(){ el("#trAmount").focus(); }, 60);
+  }
+  function closeTransfer(){ el("#transferScrim").classList.remove("show"); }
+
+  function saveTransfer(e){
+    e.preventDefault();
+    var fromId = el("#trFrom").value;
+    var toId = el("#trTo").value;
+    var amount = parseFloat(el("#trAmount").value);
+    var fee = parseFloat(el("#trFee").value) || 0;
+    var note = el("#trNote").value.trim();
+
+    if (fromId === toId) { toast("Source and destination accounts must be different"); return; }
+    if (!(amount > 0)) { toast("Enter a valid transfer amount"); el("#trAmount").focus(); return; }
+
+    var fromW = getWalletById(fromId);
+    var toW = getWalletById(toId);
+
+    var desc = note || ("Transfer: " + fromW.name + " → " + toW.name);
+
+    state.txns.push({
+      id: id(),
+      desc: desc,
+      amount: Math.round(amount * 100) / 100,
+      type: "transfer",
+      cat: "Transfer",
+      walletId: fromId,
+      toWalletId: toId,
+      fee: Math.round(fee * 100) / 100,
+      ts: now(),
+      updated_at: now(),
+      deleted: false
+    });
+
+    save(); render(); closeTransfer();
+    celebrate("🔄 Transferred " + fmt(amount) + " from " + fromW.name + " to " + toW.name + "!");
+  }
+
+  // ---------- Reconcile Balance Modal ----------
+  function updateReconcileDiff(){
+    var wid = el("#recWallet").value;
+    var balances = window.WalletEngine ? WalletEngine.computeWalletBalances(state.wallets, state.txns) : {};
+    var calcBal = (balances[wid] || {}).balance || 0;
+    el("#recCalcBal").textContent = fmt(calcBal);
+    var entered = parseFloat(el("#recActual").value);
+    var diffWrap = el("#recDiffWrap");
+    if (!isNaN(entered)) {
+      var diff = Math.round((entered - calcBal) * 100) / 100;
+      if (diff > 0) {
+        diffWrap.innerHTML = '<span style="color:var(--income)">▲ +' + fmt(diff) + ' adjustment (Income)</span>';
+      } else if (diff < 0) {
+        diffWrap.innerHTML = '<span style="color:var(--spent)">▼ −' + fmt(Math.abs(diff)) + ' adjustment (Expense)</span>';
+      } else {
+        diffWrap.innerHTML = '<span style="color:var(--muted)">✓ Balances match</span>';
+      }
+    } else {
+      diffWrap.innerHTML = '';
+    }
+  }
+
+  function openReconcile(){
+    fillWalletDropdowns();
+    el("#recActual").value = "";
+    el("#recSym").textContent = sym();
+    updateReconcileDiff();
+    el("#reconcileScrim").classList.add("show");
+    setTimeout(function(){ el("#recActual").focus(); }, 60);
+  }
+  function closeReconcile(){ el("#reconcileScrim").classList.remove("show"); }
+
+  function saveReconcile(e){
+    e.preventDefault();
+    var wid = el("#recWallet").value;
+    var entered = parseFloat(el("#recActual").value);
+    if (isNaN(entered)) { toast("Enter your actual real-world balance"); el("#recActual").focus(); return; }
+
+    var balances = window.WalletEngine ? WalletEngine.computeWalletBalances(state.wallets, state.txns) : {};
+    var calcBal = (balances[wid] || {}).balance || 0;
+    var diff = Math.round((entered - calcBal) * 100) / 100;
+
+    if (diff === 0) { toast("Balance already matches!"); closeReconcile(); return; }
+
+    var targetW = getWalletById(wid);
+    var isGain = diff > 0;
+
+    state.txns.push({
+      id: id(),
+      desc: "Balance Adjustment (" + targetW.name + ")",
+      amount: Math.abs(diff),
+      type: isGain ? "income" : "expense",
+      cat: "Other",
+      walletId: wid,
+      ts: now(),
+      updated_at: now(),
+      deleted: false
+    });
+
+    save(); render(); closeReconcile();
+    toast("Adjusted " + targetW.name + " by " + (isGain ? "+" : "−") + fmt(Math.abs(diff)));
+  }
+
+  // ---------- Custom Wallet Modal ----------
+  var PALETTE = ["#007dfe", "#05a85c", "#7c3aed", "#f97316", "#ef4444", "#0284c7", "#10b981", "#eab308", "#ec4899", "#64748b"];
+  function renderColorPalette(){
+    var cp = el("#wmColorPalette");
+    if (!cp) return;
+    cp.innerHTML = "";
+    var cur = el("#wmColor").value || PALETTE[0];
+    PALETTE.forEach(function(c){
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "color-dot-btn" + (c === cur ? " selected" : "");
+      b.style.background = c;
+      b.addEventListener("click", function(){
+        el("#wmColor").value = c;
+        renderColorPalette();
+      });
+      cp.appendChild(b);
+    });
+  }
+
+  function openWalletModal(){
+    el("#wmName").value = "";
+    el("#wmType").value = "ewallet";
+    el("#wmIcon").value = "💳";
+    el("#wmColor").value = PALETTE[0];
+    el("#wmInitial").value = "";
+    el("#wmSym").textContent = sym();
+    renderColorPalette();
+    el("#walletModalScrim").classList.add("show");
+    setTimeout(function(){ el("#wmName").focus(); }, 60);
+  }
+  function closeWalletModal(){ el("#walletModalScrim").classList.remove("show"); }
+
+  function saveWallet(e){
+    e.preventDefault();
+    var name = el("#wmName").value.trim();
+    var type = el("#wmType").value;
+    var icon = el("#wmIcon").value.trim() || "💳";
+    var color = el("#wmColor").value || "#007dfe";
+    var initBal = parseFloat(el("#wmInitial").value) || 0;
+
+    if (!name) { toast("Enter an account name"); el("#wmName").focus(); return; }
+
+    var newId = "w-" + name.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 10) + "-" + Date.now().toString(36);
+    state.wallets.push({
+      id: newId,
+      name: name,
+      type: type,
+      icon: icon,
+      color: color,
+      initialBalance: Math.round(initBal * 100) / 100,
+      isDefault: false
+    });
+
+    save(); render(); closeWalletModal();
+    celebrate("✨ Account " + name + " added!");
   }
 
   function setType(t){
@@ -1939,10 +2509,27 @@
   el("#achClose").addEventListener("click", closeAchievements);
   el("#achDone").addEventListener("click", closeAchievements);
   el("#achScrim").addEventListener("click", function(e){ if (e.target === this) closeAchievements(); });
+
+  // Wallet Actions Wire-up
+  el("#btnQuickTransfer").addEventListener("click", openTransfer);
+  el("#btnQuickReconcile").addEventListener("click", openReconcile);
+  el("#closeTransfer").addEventListener("click", closeTransfer);
+  el("#transferForm").addEventListener("submit", saveTransfer);
+  el("#transferScrim").addEventListener("click", function(e){ if (e.target === this) closeTransfer(); });
+  el("#closeReconcile").addEventListener("click", closeReconcile);
+  el("#reconcileForm").addEventListener("submit", saveReconcile);
+  el("#reconcileScrim").addEventListener("click", function(e){ if (e.target === this) closeReconcile(); });
+  el("#recWallet").addEventListener("change", updateReconcileDiff);
+  el("#recActual").addEventListener("input", updateReconcileDiff);
+  el("#closeWalletModal").addEventListener("click", closeWalletModal);
+  el("#walletForm").addEventListener("submit", saveWallet);
+  el("#walletModalScrim").addEventListener("click", function(e){ if (e.target === this) closeWalletModal(); });
+
   document.addEventListener("keydown", function(e){
     if (e.key === "Escape"){
       closeGoals(); closeAllowance(); closeAchievements(); closeAddModal();
       closeAddUtang(); closePayUtang(); closePaidUtangs();
+      closeTransfer(); closeReconcile(); closeWalletModal();
     }
   });
   el("#clearAll").addEventListener("click", clearAll);
@@ -1975,6 +2562,7 @@
     if (/paymaya|maya/.test(low)) return "Maya";
     if (/shopee/.test(low)) return "ShopeePay";
     if (/grab/.test(low)) return "GrabPay";
+    if (/gotyme/.test(low)) return "GoTyme";
     return "GCash";
   }
   function parseGcash(text){
@@ -2002,8 +2590,17 @@
       else if (/bills?\s?payment|meralco|maynilad|converge|pldt/i.test(low)) cat = "Rent & Utilities";
       else if (/load|prepaid|\bdata\b|mobile data/i.test(low)) cat = "Load & Data";
     }
+
+    var walletId = "w-gcash";
+    if (wallet === "Maya") walletId = "w-maya";
+    else if (wallet === "GoTyme") walletId = "w-gotyme";
+    else if (state && Array.isArray(state.wallets)) {
+      var match = state.wallets.filter(function(w){ return w.name.toLowerCase() === wallet.toLowerCase(); })[0];
+      if (match) walletId = match.id;
+    }
+
     var desc = wallet + (who ? " · " + who : (type === "income" ? " Cash In" : " Payment"));
-    return { desc: desc, amount: Math.round(amount*100)/100, type: type, cat: cat, ref: ref };
+    return { desc: desc, amount: Math.round(amount*100)/100, type: type, cat: cat, walletId: walletId, ref: ref };
   }
 
   window.UniBudget = window.UniBudget || {};

@@ -1,11 +1,12 @@
-// www/wallet-engine.js
 (function (root, factory) {
+  var exp = factory();
   if (typeof module === 'object' && module.exports) {
-    module.exports = factory();
-  } else {
-    root.WalletEngine = factory();
+    module.exports = exp;
   }
-})(typeof self !== 'undefined' ? self : this, function () {
+  if (root) {
+    root.WalletEngine = exp;
+  }
+})(typeof globalThis !== 'undefined' ? globalThis : (typeof self !== 'undefined' ? self : this), function () {
   "use strict";
 
   var DEFAULT_WALLETS = [

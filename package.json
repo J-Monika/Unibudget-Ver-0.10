@@ -2,8 +2,8 @@
   "name": "unibudget",
   "version": "1.0.0",
   "description": "UniBudget — student budget tracker with GCash auto-detection",
-  "private": true,
   "scripts": {
+    "test": "node --test tests/*.test.js",
     "sync": "cap sync android",
     "open": "cap open android",
     "build:apk": "cd android && ./gradlew assembleDebug"

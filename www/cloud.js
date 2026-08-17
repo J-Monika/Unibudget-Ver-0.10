@@ -88,7 +88,7 @@
         if (res.error) throw res.error;
       }
       var res2 = await sb.from("budgets").upsert(
-        { user_id: u.id, data: { currency: state.currency, limits: state.limits }, updated_at: new Date().toISOString() },
+        { user_id: u.id, data: { currency: state.currency, limits: state.limits, wallets: state.wallets }, updated_at: new Date().toISOString() },
         { onConflict: "user_id" });
       if (res2.error) throw res2.error;
 
@@ -116,7 +116,7 @@
         .eq("user_id", u.id).gt("updated_at", new Date(lastPull).toISOString());
       if (res.error) throw res.error;
 
-      var cache = readCache(email) || { currency: "PHP", limits: {}, txns: [] };
+      var cache = readCache(email) || { currency: "PHP", limits: {}, wallets: [], txns: [] };
       var byId = {}; (cache.txns || []).forEach(function (t) { byId[t.id] = t; });
       var maxU = lastPull;
       (res.data || []).forEach(function (r) {
@@ -129,8 +129,13 @@
       if (sres.data && sres.data.data) {
         if (sres.data.data.currency) cache.currency = sres.data.data.currency;
         if (sres.data.data.limits && Object.keys(sres.data.data.limits).length) { cache.limits = sres.data.data.limits; changedLocal = true; }
+        if (Array.isArray(sres.data.data.wallets) && sres.data.data.wallets.length) { cache.wallets = sres.data.data.wallets; changedLocal = true; }
       }
       cache.txns = Object.keys(byId).map(function (k) { return byId[k]; });
+      if (window.WalletEngine) {
+        cache.wallets = WalletEngine.normalizeWallets(cache.wallets);
+        cache.txns = WalletEngine.migrateTransactions(cache.txns);
+      }
       writeCache(email, cache);
       localStorage.setItem(wmKey, String(maxU));
       if (changedLocal && window.UniBudget && window.UniBudget.reload) window.UniBudget.reload();

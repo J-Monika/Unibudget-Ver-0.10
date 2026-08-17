@@ -1,7 +1,7 @@
 // tests/wallet-engine.test.js
-import { test } from 'node:test';
-import assert from 'node:assert/strict';
-import WalletEngine from '../www/wallet-engine.js';
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const WalletEngine = require('../www/wallet-engine.js');
 
 const {
   DEFAULT_WALLETS,
