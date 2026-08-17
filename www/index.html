@@ -1188,6 +1188,7 @@
       <div class="field">
         <label for="alPeriod">How often you get it</label>
         <select id="alPeriod" class="f">
+          <option value="daily">Daily</option>
           <option value="weekly">Weekly</option>
           <option value="monthly">Monthly</option>
         </select>
@@ -1809,7 +1810,9 @@
 
     var totalBudget = 0;
     EXPENSE_CATS.forEach(function(c){ totalBudget += (state.limits[c.name] || 0); });
-    if (totalBudget <= 0 && state.allowance && state.allowance.amount > 0) totalBudget = state.allowance.amount;
+    if (totalBudget <= 0 && state.allowance && state.allowance.amount > 0) {
+      totalBudget = window.WalletEngine ? WalletEngine.computeAllowanceBudget(state.allowance, currentDateFilter) : state.allowance.amount;
+    }
     if (totalBudget <= 0) totalBudget = spent > 0 ? spent : 2500;
 
     renderDonutChart(perCat, spent, totalBudget);
@@ -2280,8 +2283,11 @@
   function fmtDate(ms){ return new Date(ms).toLocaleDateString(undefined,{ month:"short", day:"numeric" }); }
 
   function periodWindow(al){
+    if (window.WalletEngine && WalletEngine.computeAllowanceWindow) {
+      return WalletEngine.computeAllowanceWindow(al, Date.now());
+    }
     var dayMs = 86400000;
-    var len = al.period === "monthly" ? 30 : 7;
+    var len = al.period === "daily" ? 1 : (al.period === "monthly" ? 30 : 7);
     var span = len * dayMs;
     var anchor = al.anchor || startOfToday();
     var k = Math.floor((Date.now() - anchor) / span);
@@ -2305,7 +2311,7 @@
     var burn = spent / daysElapsed;
     var runOut = burn > 0 ? w.start + ((al.amount - reserve) / burn) * dayMs : null;
     var danger = runOut && runOut < w.end && available > 0;
-    return { w:w, spent:spent, available:available, daysLeft:daysLeft, safePerDay:safePerDay, burn:burn, runOut:runOut, danger:danger, amount:al.amount, reserve:reserve };
+    return { w:w, spent:spent, available:available, daysLeft:daysLeft, safePerDay:safePerDay, burn:burn, runOut:runOut, danger:danger, amount:al.amount, reserve:reserve, isDaily: al.period === "daily" };
   }
   function tipidStreak(){
     var DISC = { "Food & Dining":1, "Fun & Social":1 };
@@ -2331,13 +2337,18 @@
     var cls = perDay <= 0 ? "broke" : (perDay < (f.amount / (f.w.len)) * 0.6 ? "low" : "ok");
     var pctLeft = Math.max(0, Math.min(100, (f.available / f.amount) * 100));
     var streak = tipidStreak();
+    var periodLabel = state.allowance.period === "daily" ? "today" : (state.allowance.period === "monthly" ? "month" : "week");
+    var subText = f.isDaily
+      ? '<b>' + fmt(Math.max(0, f.available)) + '</b> left of today\'s baon · resets tomorrow'
+      : '<b>' + fmt(Math.max(0, f.available)) + '</b> left · <b>' + f.daysLeft + '</b> day' + (f.daysLeft===1?"":"s") + ' until ' + fmtDate(f.w.end);
+
     var html = ''+
-      '<div class="fc-hero"><span class="amt '+cls+' num">'+fmt(Math.max(0, perDay))+'</span><span class="per">safe / day</span></div>'+
-      '<div class="fc-sub"><b>'+fmt(Math.max(0, f.available))+'</b> left · <b>'+f.daysLeft+'</b> day'+(f.daysLeft===1?"":"s")+' until '+fmtDate(f.w.end)+'</div>'+
+      '<div class="fc-hero"><span class="amt '+cls+' num">'+fmt(Math.max(0, perDay))+'</span><span class="per">' + (f.isDaily ? 'safe today' : 'safe / day') + '</span></div>'+
+      '<div class="fc-sub">' + subText + '</div>'+
       '<div class="fc-track"><span class="'+cls+'" style="width:'+pctLeft+'%"></span></div>';
     if (f.available <= 0){
-      html += '<div class="fc-danger">😵 <b>Petsa de peligro!</b> You\'ve used up this '+(state.allowance.period==="monthly"?"month":"week")+"'s baon. Hold off until "+fmtDate(f.w.end)+'.</div>';
-    } else if (f.danger){
+      html += '<div class="fc-danger">😵 <b>Petsa de peligro!</b> You\'ve used up ' + (f.isDaily ? "today's" : "this " + periodLabel + "'s") + ' baon. Hold off until ' + (f.isDaily ? 'tomorrow' : fmtDate(f.w.end)) + '.</div>';
+    } else if (f.danger && !f.isDaily){
       var early = Math.max(1, Math.round((f.w.end - f.runOut) / 86400000));
       var fix = f.available / f.daysLeft;
       html += '<div class="fc-danger">⚠️ At this pace your baon runs out around <b>'+fmtDate(f.runOut)+'</b> — about <b>'+early+' day'+(early===1?"":"s")+' early</b>. Keep it under <b>'+fmt(fix)+'/day</b> to make it.</div>';
@@ -2351,7 +2362,7 @@
   function openAllowance(){
     var al = state.allowance || {};
     el("#alAmount").value = al.amount || "";
-    el("#alPeriod").value = al.period || "weekly";
+    el("#alPeriod").value = al.period || "daily";
     el("#alReserve").value = al.reserve || "";
     el("#alSym").textContent = sym();
     el("#alScrim").classList.add("show");

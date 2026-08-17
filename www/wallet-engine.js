@@ -252,6 +252,49 @@
     });
   }
 
+  function computeAllowanceWindow(al, currentTime) {
+    if (!al) return null;
+    var dayMs = 86400000;
+    var nowMs = currentTime || Date.now();
+    var period = al.period || "weekly";
+
+    var len = 7;
+    if (period === "daily") len = 1;
+    else if (period === "monthly") len = 30;
+
+    var span = len * dayMs;
+    var d = new Date(nowMs);
+    d.setHours(0, 0, 0, 0);
+    var startOfToday = d.getTime();
+
+    if (period === "daily") {
+      return { start: startOfToday, end: startOfToday + dayMs, len: 1 };
+    }
+
+    var anchor = al.anchor || startOfToday;
+    var k = Math.floor((nowMs - anchor) / span);
+    if (k < 0) k = 0;
+    var start = anchor + k * span;
+    return { start: start, end: start + span, len: len };
+  }
+
+  function computeAllowanceBudget(al, dateFilter) {
+    if (!al || !(al.amount > 0)) return 0;
+    var period = al.period || "weekly";
+    var amt = al.amount;
+
+    if (dateFilter === "this-week") {
+      if (period === "daily") return amt * 7;
+      if (period === "weekly") return amt;
+      return Math.round((amt / 4.33) * 100) / 100;
+    }
+
+    // Default or "this-month" / overall
+    if (period === "daily") return amt * 30;
+    if (period === "weekly") return Math.round((amt * 4.33) * 100) / 100;
+    return amt;
+  }
+
   return {
     DEFAULT_WALLETS: DEFAULT_WALLETS,
     normalizeWallets: normalizeWallets,
@@ -262,6 +305,8 @@
     generateGcashTxnId: generateGcashTxnId,
     getStartOfWeek: getStartOfWeek,
     getStartOfMonth: getStartOfMonth,
-    filterTransactions: filterTransactions
+    filterTransactions: filterTransactions,
+    computeAllowanceWindow: computeAllowanceWindow,
+    computeAllowanceBudget: computeAllowanceBudget
   };
 });
