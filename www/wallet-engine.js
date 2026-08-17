@@ -143,11 +143,40 @@
     return Math.round(sum * 100) / 100;
   }
 
+  function strHash(s) {
+    var str = String(s || "");
+    var hash = 5381;
+    for (var i = 0; i < str.length; i++) {
+      hash = ((hash << 5) + hash) + str.charCodeAt(i);
+      hash |= 0;
+    }
+    return Math.abs(hash).toString(36);
+  }
+
+  function generateGcashTxnId(parsed, meta) {
+    if (!parsed) return "gcash-" + Date.now();
+    meta = meta || {};
+    var ref = parsed.ref || meta.ref;
+    if (ref) {
+      return "gcash-ref-" + ref;
+    }
+    if (meta.key) {
+      return "gcash-key-" + strHash(parsed.walletId + ":" + parsed.type + ":" + parsed.amount + ":" + (parsed.who || "") + ":" + meta.key);
+    }
+    if (meta.postTime && Number(meta.postTime) > 0) {
+      return "gcash-post-" + strHash(parsed.walletId + ":" + parsed.type + ":" + parsed.amount + ":" + (parsed.who || "") + ":" + meta.postTime);
+    }
+    var rawText = (meta.text || parsed.desc || "").trim().toLowerCase();
+    return "gcash-fp-" + strHash(parsed.walletId + ":" + parsed.type + ":" + parsed.amount + ":" + (parsed.who || "") + ":" + rawText);
+  }
+
   return {
     DEFAULT_WALLETS: DEFAULT_WALLETS,
     normalizeWallets: normalizeWallets,
     migrateTransactions: migrateTransactions,
     computeWalletBalances: computeWalletBalances,
-    computeTotalNetWorth: computeTotalNetWorth
+    computeTotalNetWorth: computeTotalNetWorth,
+    strHash: strHash,
+    generateGcashTxnId: generateGcashTxnId
   };
 });

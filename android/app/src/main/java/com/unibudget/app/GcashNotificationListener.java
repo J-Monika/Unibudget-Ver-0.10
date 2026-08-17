@@ -45,7 +45,10 @@ public class GcashNotificationListener extends NotificationListenerService {
         combined = combined.trim();
         if (combined.isEmpty()) return;
 
-        GcashCaptureStore.handle(getApplicationContext(), combined);
+        long postTime = sbn.getPostTime();
+        String key = sbn.getKey();
+
+        GcashCaptureStore.handle(getApplicationContext(), combined, key, postTime);
     }
 
     private static String charSeq(CharSequence cs) { return cs == null ? "" : cs.toString(); }

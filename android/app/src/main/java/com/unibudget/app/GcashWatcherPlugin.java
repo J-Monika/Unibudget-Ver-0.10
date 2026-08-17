@@ -55,6 +55,17 @@ public class GcashWatcherPlugin extends Plugin {
     }
 
     /** Called by GcashCaptureStore when the app is open. */
+    public void emitMessage(org.json.JSONObject payload) {
+        JSObject ev = new JSObject();
+        if (payload != null) {
+            ev.put("text", payload.optString("text"));
+            ev.put("key", payload.optString("key"));
+            ev.put("postTime", payload.optLong("postTime"));
+            if (payload.has("ref")) ev.put("ref", payload.optString("ref"));
+        }
+        notifyListeners("gcashMessage", ev);
+    }
+
     public void emitMessage(String text) {
         JSObject ev = new JSObject();
         ev.put("text", text);
@@ -65,7 +76,27 @@ public class GcashWatcherPlugin extends Plugin {
     public void getQueue(PluginCall call) {
         List<String> msgs = GcashCaptureStore.drain(getContext());
         JSArray arr = new JSArray();
-        for (String m : msgs) arr.put(m);
+        for (String m : msgs) {
+            try {
+                if (m != null && m.startsWith("{") && m.endsWith("}")) {
+                    org.json.JSONObject obj = new org.json.JSONObject(m);
+                    JSObject item = new JSObject();
+                    item.put("text", obj.optString("text"));
+                    item.put("key", obj.optString("key"));
+                    item.put("postTime", obj.optLong("postTime"));
+                    if (obj.has("ref")) item.put("ref", obj.optString("ref"));
+                    arr.put(item);
+                } else {
+                    JSObject item = new JSObject();
+                    item.put("text", m);
+                    arr.put(item);
+                }
+            } catch (Exception e) {
+                JSObject item = new JSObject();
+                item.put("text", m);
+                arr.put(item);
+            }
+        }
         JSObject ret = new JSObject();
         ret.put("messages", arr);
         call.resolve(ret);

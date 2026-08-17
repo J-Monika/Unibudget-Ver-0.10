@@ -2609,26 +2609,57 @@
     }
 
     var desc = wallet + (who ? " · " + who : (type === "income" ? " Cash In" : " Payment"));
-    return { desc: desc, amount: Math.round(amount*100)/100, type: type, cat: cat, walletId: walletId, ref: ref };
+    return { desc: desc, amount: Math.round(amount*100)/100, type: type, cat: cat, walletId: walletId, ref: ref, who: who, wallet: wallet };
   }
 
   window.UniBudget = window.UniBudget || {};
-  window.UniBudget.ingestGcash = function(text){
+  window.UniBudget.parseGcash = parseGcash;
+  window.UniBudget.ingestGcash = function(data){
     if (!currentUser || !state) return { ok:false, reason:"not-logged-in" };
-    var parsed = parseGcash(text);
+    var rawText = (typeof data === "object" && data !== null) ? (data.text || "") : String(data || "");
+    var metaKey = (typeof data === "object" && data !== null) ? (data.key || "") : "";
+    var metaPostTime = (typeof data === "object" && data !== null) ? (Number(data.postTime) || 0) : 0;
+    var metaRef = (typeof data === "object" && data !== null) ? (data.ref || null) : null;
+
+    var parsed = parseGcash(rawText);
     if (!parsed) return { ok:false, reason:"unparsed" };
-    var stableId = parsed.ref ? ("gcash-" + parsed.ref) : id();
-    var existing = state.txns.filter(function(x){ return x.id === stableId; })[0];
-    if (existing && !existing.deleted) return { ok:false, reason:"duplicate" };
-    if (!parsed.ref){
-      var dup = state.txns.some(function(x){
-        return x.source === "gcash-auto" && !x.deleted && x.amount === parsed.amount &&
-               x.type === parsed.type && (now() - x.ts) < 90000;
-      });
-      if (dup) return { ok:false, reason:"duplicate" };
+    if (!parsed.ref && metaRef) parsed.ref = metaRef;
+
+    var meta = { text: rawText, key: metaKey, postTime: metaPostTime, ref: parsed.ref };
+    var stableId = (window.WalletEngine && WalletEngine.generateGcashTxnId)
+      ? WalletEngine.generateGcashTxnId(parsed, meta)
+      : (parsed.ref ? ("gcash-ref-" + parsed.ref) : ("gcash-fp-" + id()));
+
+    // 1. Direct ID deduplication (re-scanned alerts produce the exact same stableId)
+    var existing = state.txns.filter(function(x){ return x.id === stableId && !x.deleted; })[0];
+    if (existing) return { ok:false, reason:"duplicate" };
+
+    // 2. Cross-channel collapse (e.g. SMS arriving with Ref No. after Notification arrived without Ref No.)
+    var recentMatching = state.txns.filter(function(x){
+      return x.source === "gcash-auto" && !x.deleted &&
+             x.amount === parsed.amount && x.type === parsed.type &&
+             x.walletId === parsed.walletId && (now() - x.ts) < 90000;
+    })[0];
+
+    if (recentMatching) {
+      if (parsed.ref && !recentMatching.ref) {
+        // Enrich existing auto-captured record with the reference number from SMS
+        recentMatching.ref = parsed.ref;
+        if (parsed.desc && recentMatching.desc.length < parsed.desc.length) recentMatching.desc = parsed.desc;
+        recentMatching.updated_at = now();
+        save(); render();
+        return { ok:true, txn:recentMatching, enriched:true };
+      }
+      // Otherwise, reject as 90s cross-alert duplicate (e.g. Notification arrived after SMS)
+      return { ok:false, reason:"duplicate" };
     }
-    parsed.id = stableId; parsed.ts = now(); parsed.updated_at = now();
-    parsed.deleted = false; parsed.source = "gcash-auto";
+
+    parsed.id = stableId;
+    parsed.ts = (metaPostTime > 0 && Math.abs(now() - metaPostTime) < 86400000) ? metaPostTime : now();
+    parsed.updated_at = now();
+    parsed.deleted = false;
+    parsed.source = "gcash-auto";
+
     state.txns.push(parsed);
     save(); render();
     var walletName = (parsed.desc || "").split(" · ")[0] || "wallet";

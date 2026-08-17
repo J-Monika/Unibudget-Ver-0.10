@@ -26,12 +26,14 @@ public class GcashSmsReceiver extends BroadcastReceiver {
         // A single multipart SMS arrives as several PDUs — stitch the body back together.
         StringBuilder body = new StringBuilder();
         String sender = "";
+        long timestamp = System.currentTimeMillis();
         for (Object pdu : pdus) {
             SmsMessage msg = (format != null)
                     ? SmsMessage.createFromPdu((byte[]) pdu, format)
                     : SmsMessage.createFromPdu((byte[]) pdu);
             if (msg == null) continue;
             if (sender.isEmpty() && msg.getOriginatingAddress() != null) sender = msg.getOriginatingAddress();
+            if (msg.getTimestampMillis() > 0) timestamp = msg.getTimestampMillis();
             body.append(msg.getMessageBody());
         }
 
@@ -41,7 +43,7 @@ public class GcashSmsReceiver extends BroadcastReceiver {
         String blob = ((sender == null ? "" : sender) + " " + text).toLowerCase();
         // Accept texts from any supported wallet sender or whose body names one.
         if (blob.matches("(?s).*(gcash|paymaya|maya|shopeepay|shopee|grabpay).*")) {
-            GcashCaptureStore.handle(context.getApplicationContext(), text);
+            GcashCaptureStore.handle(context.getApplicationContext(), text, "sms:" + timestamp, timestamp);
         }
     }
 }

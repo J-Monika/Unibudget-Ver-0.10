@@ -12,9 +12,10 @@
   var GcashWatcher = Cap.registerPlugin("GcashWatcher");
   window.GcashWatcher = GcashWatcher;
 
-  function feed(text) {
+  function feed(data) {
+    if (!data) return;
     if (window.UniBudget && window.UniBudget.isReady && window.UniBudget.isReady()) {
-      window.UniBudget.ingestGcash(text);
+      window.UniBudget.ingestGcash(data);
     }
   }
 
@@ -29,7 +30,7 @@
   }
 
   GcashWatcher.addListener("gcashMessage", function (ev) {
-    if (ev && ev.text) feed(ev.text);
+    if (ev) feed(ev);
   });
 
   function whenReady(fn) {

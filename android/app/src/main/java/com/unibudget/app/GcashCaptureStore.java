@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
 public class GcashCaptureStore {
 
     private static final String PREFS = "unibudget_gcash";
-    private static final String KEY_QUEUE = "queue";
+    private static final String KEY_QUEUE = "queue_v2";
     private static final String CHANNEL_ID = "gcash_alerts";
     private static final int NOTIF_BASE = 4200;
 
@@ -48,7 +48,8 @@ public class GcashCaptureStore {
             Pattern.compile("ref(?:erence)?\\.?\\s*(?:no\\.?)?\\s*[:#]?\\s*([0-9]{6,})", Pattern.CASE_INSENSITIVE);
 
     private static final String KEY_SEEN = "seen_refs";
-    private static final long SEEN_WINDOW_MS = 15 * 60 * 1000; // 15 min
+    // Retain seen notification IDs for 7 days so notification shade re-scans never double log
+    private static final long SEEN_WINDOW_MS = 7L * 24 * 60 * 60 * 1000;
 
     /** Returns true if the text looks like a GCash transaction alert. */
     public static boolean looksLikeGcash(String text) {
@@ -56,32 +57,48 @@ public class GcashCaptureStore {
         return AMOUNT.matcher(text).find() && LOOKS_LIKE.matcher(text).find();
     }
 
-    /** Entry point called by the notification listener and SMS receiver. */
     public static void handle(Context ctx, String text) {
+        handle(ctx, text, null, System.currentTimeMillis());
+    }
+
+    /** Entry point called by the notification listener and SMS receiver. */
+    public static void handle(Context ctx, String text, String rawKey, long postTime) {
         if (!looksLikeGcash(text)) return;
 
-        // Idempotency: dedupe by GCash Ref no. (falls back to amount+direction).
-        String key = dedupKey(text);
-        if (alreadySeen(ctx, key)) return;   // a notification + its SMS collapse to one
+        // Idempotency: dedupe by GCash Ref no. or notification post key/time
+        String key = dedupKey(text, rawKey, postTime);
+        if (alreadySeen(ctx, key)) return;
         markSeen(ctx, key);
+
+        JSONObject payload = new JSONObject();
+        try {
+            payload.put("text", text);
+            payload.put("key", key);
+            payload.put("postTime", postTime);
+            Matcher r = REF.matcher(text);
+            if (r.find()) payload.put("ref", r.group(1));
+        } catch (Exception ignored) {}
 
         GcashWatcherPlugin plugin = livePlugin;
         if (plugin != null) {
-            plugin.emitMessage(text);      // app open -> JS ingests live
+            plugin.emitMessage(payload);      // app open -> JS ingests live
         } else {
-            enqueue(ctx, text);            // app closed -> keep for next launch
+            enqueue(ctx, payload.toString()); // app closed -> keep for next launch
         }
-        postNotification(ctx, text);       // always alert the user
+        postNotification(ctx, text);          // always alert the user
     }
 
-    private static String dedupKey(String text) {
+    private static String dedupKey(String text, String rawKey, long postTime) {
         Matcher r = REF.matcher(text);
         if (r.find()) return "ref:" + r.group(1);
+        if (rawKey != null && !rawKey.isEmpty()) {
+            return "notif:" + rawKey + ":" + postTime;
+        }
         Matcher a = AMOUNT.matcher(text);
         String amt = a.find() ? a.group(1) : "?";
         boolean income = Pattern.compile("received|credited|cash\\s?in|refund", Pattern.CASE_INSENSITIVE)
                 .matcher(text).find();
-        return "amt:" + amt + ":" + (income ? "in" : "out");
+        return "amt:" + amt + ":" + (income ? "in" : "out") + ":" + postTime;
     }
 
     private static synchronized boolean alreadySeen(Context ctx, String key) {
@@ -111,12 +128,12 @@ public class GcashCaptureStore {
         } catch (Exception ignored) {}
     }
 
-    private static synchronized void enqueue(Context ctx, String text) {
+    private static synchronized void enqueue(Context ctx, String payload) {
         SharedPreferences p = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         JSONArray arr;
         try { arr = new JSONArray(p.getString(KEY_QUEUE, "[]")); }
         catch (Exception e) { arr = new JSONArray(); }
-        arr.put(text);
+        arr.put(payload);
         p.edit().putString(KEY_QUEUE, arr.toString()).apply();
     }
 
