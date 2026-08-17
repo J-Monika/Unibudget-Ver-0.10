@@ -300,6 +300,74 @@
   .bar > span.warn { background: var(--warn); }
   .bar > span.over { background: var(--spent); }
 
+  /* ---------- Search & Filter Bar ---------- */
+  .txn-controls { padding: 4px 16px 12px; display: flex; flex-direction: column; gap: 9px; width: 100%; box-sizing: border-box; }
+  .txn-search-wrap {
+    position: relative; display: flex; align-items: center; width: 100%;
+  }
+  .txn-search-icon {
+    position: absolute; left: 12px; font-size: 13px; color: var(--muted); pointer-events: none;
+  }
+  .txn-search-input {
+    width: 100%; border: 1.5px solid var(--line); background: var(--page); color: var(--ink);
+    border-radius: 12px; padding: 10px 34px 10px 34px; font-size: 13.5px; font-weight: 500; font-family: inherit;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .txn-search-input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 2px var(--accent-soft); }
+  .txn-search-clear {
+    position: absolute; right: 10px; border: 0; background: transparent; color: var(--muted);
+    font-size: 14px; font-weight: 700; cursor: pointer; display: none; padding: 4px 6px; border-radius: 6px;
+  }
+  .txn-search-clear.show { display: block; }
+  .txn-search-clear:hover { color: #fff; background: var(--card-elevated); }
+
+  .txn-filter-chips-row {
+    display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px;
+    scrollbar-width: none; -webkit-overflow-scrolling: touch; align-items: center;
+  }
+  .txn-filter-chips-row::-webkit-scrollbar { display: none; }
+  .txn-filter-group { display: flex; gap: 6px; flex-shrink: 0; }
+  .f-chip-divider { width: 1px; height: 18px; background: var(--line); flex-shrink: 0; margin: 0 2px; }
+
+  .f-chip {
+    border: 1px solid var(--line); background: var(--card-elevated); color: var(--muted);
+    font-size: 11.5px; font-weight: 700; padding: 5px 11px; border-radius: 999px;
+    cursor: pointer; white-space: nowrap; font-family: inherit; transition: all .15s ease;
+  }
+  .f-chip:hover { border-color: var(--muted); color: var(--ink); }
+  .f-chip.active {
+    background: var(--accent-soft); border-color: var(--accent); color: #fff;
+    box-shadow: 0 2px 8px rgba(99,102,241,.25);
+  }
+
+  .custom-date-bar {
+    display: flex; align-items: center; gap: 8px; background: var(--page);
+    border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px;
+    font-size: 12px; flex-wrap: wrap; animation: fadeIn .2s ease;
+  }
+  .date-field { display: flex; align-items: center; gap: 6px; }
+  .date-field label { color: var(--muted); font-weight: 700; font-size: 11.5px; }
+  .date-input {
+    border: 1px solid var(--line); background: var(--card); color: var(--ink);
+    border-radius: 8px; padding: 4px 8px; font-size: 12px; font-family: inherit;
+  }
+  .date-apply-btn {
+    border: 0; background: var(--accent); color: #fff; font-size: 11.5px; font-weight: 700;
+    padding: 5px 12px; border-radius: 8px; cursor: pointer; margin-left: auto;
+  }
+  .date-apply-btn:hover { background: var(--accent-strong); }
+
+  .filter-summary-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 2px 4px; font-size: 12px; color: var(--muted); font-weight: 600;
+  }
+  .filter-summary-text { color: var(--ink-soft); font-weight: 700; }
+  .filter-reset-btn {
+    border: 0; background: transparent; color: var(--accent); font-size: 12px;
+    font-weight: 700; cursor: pointer; text-decoration: underline; padding: 2px 4px;
+  }
+  .filter-reset-btn:hover { color: #fff; }
+
   /* ---------- Transactions ---------- */
   .txns-card { padding-bottom: 8px; }
   .txns { padding: 6px 16px 16px; display: flex; flex-direction: column; gap: 8px; width: 100%; box-sizing: border-box; }
@@ -824,6 +892,51 @@
         <h2>Recent Transactions</h2>
         <span class="side"><span class="link" id="syncNow">🔄 Sync</span> &nbsp; <span class="link" id="clearAll" style="color:var(--spent)">Clear All</span></span>
       </div>
+
+      <!-- Search & Filter Controls -->
+      <div class="txn-controls">
+        <div class="txn-search-wrap">
+          <span class="txn-search-icon">🔍</span>
+          <input type="text" id="txnSearchInput" class="txn-search-input" placeholder="Search store, person, note, ref, amount..." autocomplete="off" />
+          <button type="button" id="txnSearchClear" class="txn-search-clear" aria-label="Clear search">✕</button>
+        </div>
+
+        <div class="txn-filter-chips-row">
+          <div class="txn-filter-group" id="dateFilterChips">
+            <button type="button" class="f-chip active" data-date="all">All Dates</button>
+            <button type="button" class="f-chip" data-date="this-week">This Week</button>
+            <button type="button" class="f-chip" data-date="this-month">This Month</button>
+            <button type="button" class="f-chip" data-date="custom">Custom 📅</button>
+          </div>
+          <div class="f-chip-divider"></div>
+          <div class="txn-filter-group" id="typeFilterChips">
+            <button type="button" class="f-chip active" data-type="all">All Types</button>
+            <button type="button" class="f-chip" data-type="expense">Expenses (−)</button>
+            <button type="button" class="f-chip" data-type="income">Income (+)</button>
+            <button type="button" class="f-chip" data-type="transfer">Transfers (🔄)</button>
+          </div>
+        </div>
+
+        <!-- Inline Collapsible Custom Date Range Picker -->
+        <div class="custom-date-bar" id="customDateBar" style="display:none">
+          <div class="date-field">
+            <label for="filterDateFrom">From:</label>
+            <input type="date" id="filterDateFrom" class="date-input" />
+          </div>
+          <div class="date-field">
+            <label for="filterDateTo">To:</label>
+            <input type="date" id="filterDateTo" class="date-input" />
+          </div>
+          <button type="button" class="date-apply-btn" id="btnApplyCustomDate">Apply</button>
+        </div>
+
+        <!-- Filter Summary / Count Pill -->
+        <div class="filter-summary-row" id="filterSummaryRow" style="display:none">
+          <span class="filter-summary-text" id="filterSummaryText">Found 0 transactions · Total: ₱0.00</span>
+          <button type="button" class="filter-reset-btn" id="btnResetFilters">✕ Reset Filters</button>
+        </div>
+      </div>
+
       <div class="txns" id="txns"></div>
     </section>
   </div>
@@ -1530,10 +1643,26 @@
     car.appendChild(addCard);
   }
 
-  // ---------- Render ----------
+  // ---------- Render & Filter State ----------
+  var currentSearchQuery = "";
+  var currentDateFilter = "all";
+  var currentTypeFilter = "all";
+  var currentCustomFrom = "";
+  var currentCustomTo = "";
+
   function activeTxns(){ return (state && state.txns) ? state.txns.filter(function(t){ return !t.deleted; }) : []; }
   function filteredTxns(){
     var all = activeTxns();
+    if (window.WalletEngine && WalletEngine.filterTransactions) {
+      return WalletEngine.filterTransactions(all, {
+        query: currentSearchQuery,
+        dateRange: currentDateFilter,
+        type: currentTypeFilter,
+        customFrom: currentCustomFrom,
+        customTo: currentCustomTo,
+        walletId: selectedWalletFilter
+      }, state.wallets);
+    }
     if (!selectedWalletFilter) return all;
     return all.filter(function(t){
       return t.walletId === selectedWalletFilter || (t.type === "transfer" && t.toWalletId === selectedWalletFilter);
@@ -1586,6 +1715,24 @@
         perCat["Other"] = (perCat["Other"] || 0) + t.fee;
       }
     });
+
+    // Update Filter Summary Row
+    var isFiltering = !!(currentSearchQuery || currentDateFilter !== "all" || currentTypeFilter !== "all" || selectedWalletFilter);
+    var summaryRow = el("#filterSummaryRow");
+    if (summaryRow) {
+      if (isFiltering) {
+        summaryRow.style.display = "flex";
+        var totalAmt = 0;
+        txList.forEach(function(t){
+          if (t.type === "expense") totalAmt += t.amount;
+          else if (t.type === "income") totalAmt += t.amount;
+          else if (t.type === "transfer") totalAmt += t.amount;
+        });
+        el("#filterSummaryText").textContent = "Found " + txList.length + " transaction" + (txList.length === 1 ? "" : "s") + " · Total: " + fmt(totalAmt);
+      } else {
+        summaryRow.style.display = "none";
+      }
+    }
 
     var totalBudget = 0;
     EXPENSE_CATS.forEach(function(c){ totalBudget += (state.limits[c.name] || 0); });
@@ -2533,6 +2680,76 @@
   el("#closeWalletModal").addEventListener("click", closeWalletModal);
   el("#walletForm").addEventListener("submit", saveWallet);
   el("#walletModalScrim").addEventListener("click", function(e){ if (e.target === this) closeWalletModal(); });
+
+  // Search & Filter Events Wire-up
+  var searchInput = el("#txnSearchInput");
+  var searchClear = el("#txnSearchClear");
+  if (searchInput) {
+    searchInput.addEventListener("input", function(){
+      currentSearchQuery = this.value;
+      if (searchClear) searchClear.classList.toggle("show", !!this.value);
+      render();
+    });
+  }
+  if (searchClear) {
+    searchClear.addEventListener("click", function(){
+      if (searchInput) { searchInput.value = ""; currentSearchQuery = ""; }
+      searchClear.classList.remove("show");
+      render();
+    });
+  }
+
+  var dateChips = document.querySelectorAll("#dateFilterChips .f-chip");
+  dateChips.forEach(function(btn){
+    btn.addEventListener("click", function(){
+      dateChips.forEach(function(b){ b.classList.remove("active"); });
+      this.classList.add("active");
+      currentDateFilter = this.dataset.date;
+      var dateBar = el("#customDateBar");
+      if (dateBar) {
+        dateBar.style.display = (currentDateFilter === "custom") ? "flex" : "none";
+      }
+      render();
+    });
+  });
+
+  var typeChips = document.querySelectorAll("#typeFilterChips .f-chip");
+  typeChips.forEach(function(btn){
+    btn.addEventListener("click", function(){
+      typeChips.forEach(function(b){ b.classList.remove("active"); });
+      this.classList.add("active");
+      currentTypeFilter = this.dataset.type;
+      render();
+    });
+  });
+
+  var btnApplyCustom = el("#btnApplyCustomDate");
+  if (btnApplyCustom) {
+    btnApplyCustom.addEventListener("click", function(){
+      currentCustomFrom = el("#filterDateFrom").value;
+      currentCustomTo = el("#filterDateTo").value;
+      render();
+    });
+  }
+
+  var btnReset = el("#btnResetFilters");
+  if (btnReset) {
+    btnReset.addEventListener("click", function(){
+      currentSearchQuery = "";
+      currentDateFilter = "all";
+      currentTypeFilter = "all";
+      currentCustomFrom = "";
+      currentCustomTo = "";
+      selectedWalletFilter = null;
+      if (searchInput) searchInput.value = "";
+      if (searchClear) searchClear.classList.remove("show");
+      dateChips.forEach(function(b){ b.classList.toggle("active", b.dataset.date === "all"); });
+      typeChips.forEach(function(b){ b.classList.toggle("active", b.dataset.type === "all"); });
+      var dateBar = el("#customDateBar");
+      if (dateBar) dateBar.style.display = "none";
+      render();
+    });
+  }
 
   document.addEventListener("keydown", function(e){
     if (e.key === "Escape"){

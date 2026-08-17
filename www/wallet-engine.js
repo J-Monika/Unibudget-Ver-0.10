@@ -170,6 +170,88 @@
     return "gcash-fp-" + strHash(parsed.walletId + ":" + parsed.type + ":" + parsed.amount + ":" + (parsed.who || "") + ":" + rawText);
   }
 
+  function getStartOfWeek(date) {
+    var d = new Date(date || Date.now());
+    var day = d.getDay();
+    var diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    var monday = new Date(d.setDate(diff));
+    monday.setHours(0, 0, 0, 0);
+    return monday.getTime();
+  }
+
+  function getStartOfMonth(date) {
+    var d = new Date(date || Date.now());
+    return new Date(d.getFullYear(), d.getMonth(), 1, 0, 0, 0, 0).getTime();
+  }
+
+  function filterTransactions(txns, options, wallets) {
+    if (!Array.isArray(txns)) return [];
+    options = options || {};
+    var query = (options.query || "").trim().toLowerCase();
+    var dateRange = options.dateRange || "all";
+    var customFrom = options.customFrom ? new Date(options.customFrom).setHours(0, 0, 0, 0) : null;
+    var customTo = options.customTo ? new Date(options.customTo).setHours(23, 59, 59, 999) : null;
+    var type = options.type || "all";
+    var walletId = options.walletId || null;
+
+    var walletMap = {};
+    if (Array.isArray(wallets)) {
+      wallets.forEach(function(w){ if (w && w.id) walletMap[w.id] = w; });
+    }
+
+    var now = Date.now();
+    var weekStart = getStartOfWeek(now);
+    var monthStart = getStartOfMonth(now);
+
+    return txns.filter(function(t) {
+      if (!t || t.deleted) return false;
+
+      // 1. Wallet Filter
+      if (walletId) {
+        var matchW = t.walletId === walletId || (t.type === "transfer" && t.toWalletId === walletId);
+        if (!matchW) return false;
+      }
+
+      // 2. Type Filter
+      if (type !== "all") {
+        if (type === "expense" && t.type !== "expense") return false;
+        if (type === "income" && t.type !== "income") return false;
+        if (type === "transfer" && t.type !== "transfer") return false;
+        if (type === "adjustment" && t.type !== "adjustment") return false;
+      }
+
+      // 3. Date Range Filter
+      var ts = Number(t.ts) || 0;
+      if (dateRange === "this-week") {
+        if (ts < weekStart) return false;
+      } else if (dateRange === "this-month") {
+        if (ts < monthStart) return false;
+      } else if (dateRange === "custom") {
+        if (customFrom && ts < customFrom) return false;
+        if (customTo && ts > customTo) return false;
+      }
+
+      // 4. Query Matching
+      if (query) {
+        var wSrcName = (walletMap[t.walletId] || {}).name || "";
+        var wDstName = (t.toWalletId && walletMap[t.toWalletId]) ? walletMap[t.toWalletId].name : "";
+        var matchString = (
+          (t.desc || "") + " " +
+          (t.sub || "") + " " +
+          (t.cat || "") + " " +
+          (t.ref || "") + " " +
+          wSrcName + " " +
+          wDstName + " " +
+          String(t.amount || "")
+        ).toLowerCase();
+
+        if (matchString.indexOf(query) === -1) return false;
+      }
+
+      return true;
+    });
+  }
+
   return {
     DEFAULT_WALLETS: DEFAULT_WALLETS,
     normalizeWallets: normalizeWallets,
@@ -177,6 +259,9 @@
     computeWalletBalances: computeWalletBalances,
     computeTotalNetWorth: computeTotalNetWorth,
     strHash: strHash,
-    generateGcashTxnId: generateGcashTxnId
+    generateGcashTxnId: generateGcashTxnId,
+    getStartOfWeek: getStartOfWeek,
+    getStartOfMonth: getStartOfMonth,
+    filterTransactions: filterTransactions
   };
 });
