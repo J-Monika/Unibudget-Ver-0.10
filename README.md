@@ -1,120 +1,158 @@
-# UniBudget — Android app
+# UniBudget — Android App & Student Finance Tracker
 
-A student budget tracker with **login/signup (Supabase cloud sync)** and **automatic GCash detection**: when GCash notifies you of money received or sent, the app parses it, logs the transaction, updates your budget, and sends you a notification — even when the app is closed.
+UniBudget is a student budget tracker with **multi-wallet and multi-account management**, **login/signup (Supabase cloud sync)**, and **automatic notification/SMS transaction capture** (GCash, Maya, GoTyme, etc.). When your e-wallet notifies you of money received or spent, the app automatically parses it, maps it to the right wallet, logs the transaction, updates your budget, and alerts you — even when the app is closed.
 
-A ready-to-install debug build is already here: **`UniBudget-debug.apk`**.
-(It runs in offline *Device mode* until you add your Supabase keys and rebuild — see below.)
+A ready-to-install debug build is available: **`UniBudget-debug.apk`**.
 
 ---
 
-## What's in the project
+## 🌟 What's New: Multi-Wallet & Multi-Account Balance System
+
+UniBudget now features a comprehensive **Multi-Wallet Subsystem** tailored for Philippine personal finance workflows:
+
+### 1. Default Philippine E-Wallets & Accounts
+- **💵 Cash** (Emerald `#10b981`) — Physical cash on hand with quick balance reconciliation.
+- **💙 GCash** (Electric Blue `#007dfe`) — Direct sync with GCash notification & SMS auto-capture.
+- **💚 Maya** (Maya Green `#05a85c`) — Automatic capture and separate balance tracking.
+- **🟣 GoTyme** (Digital Purple `#7c3aed`) — Dedicated GoTyme bank account tracking.
+
+### 2. Interactive Wallet Carousel
+- Located directly below the **Total Net Worth** card.
+- Displays an **🌐 All Wallets** overview card, individual account balance cards, and a **➕ New Account** button.
+- **Filter-on-Tap**: Tapping any wallet card dynamically isolates and filters your entire dashboard (Total Balance, Donut Chart, Category Breakdown, and Recent Transactions) to display figures for that specific account. Includes a one-tap `✕ Filtered` dismissal pill.
+
+### 3. Account-to-Account Transfers (`🔄 Transfer`)
+- Easily move funds between accounts (e.g. *GoTyme → GCash* or *Bank → Cash*).
+- Transfers update respective wallet balances without skewing your monthly expense/income budget limits.
+- Supports optional **InstaPay / Cash-In fees** (e.g., ₱15 or ₱25) recorded as a tracked expense under "Other".
+
+### 4. Hybrid Balance Reconciliation (`⚖️ Reconcile`)
+- Live balance equation:
+  $$\text{Balance}(W) = \text{initialBalance}(W) + \text{Income}(W) - \text{Expense}(W) + \text{TransfersIn}(W) - \text{TransfersOut}(W) - \text{TransferFees}(W)$$
+- If your physical cash or real wallet balance differs from the app due to untracked expenses, enter your actual balance into the Reconcile modal. UniBudget computes the exact difference and logs a balance adjustment transaction.
+
+### 5. Custom E-Wallets & Banks (`➕ New Account`)
+- Create unlimited custom accounts (e.g., **SeaBank**, **BDO**, **BPI**, **ShopeePay**, **GrabPay**).
+- Customize with a 10-color gradient palette picker, custom emoji icons, account types (*e-wallet*, *bank*, *cash*, *other*), and starting balances.
+
+### 6. Automated Wallet Routing
+- Native notification & SMS listener automatically attributes transactions to the appropriate wallet (`w-gcash`, `w-maya`, `w-gotyme`, or matching custom account name).
+
+---
+
+## 📂 Project Architecture
 
 ```
 UniBudget/
-├─ UniBudget-debug.apk     ← installable build (sideload this to your phone)
-├─ www/                    ← the app (HTML/CSS/JS)
-│  ├─ index.html           ← UI + login/signup + budget logic
-│  ├─ app-config.js        ← ⚙️ paste your Supabase keys here
-│  ├─ cloud.js             ← Supabase auth + sync adapter
-│  ├─ gcash-bridge.js      ← connects native capture → app + "Connect GCash" panel
-│  └─ vendor/supabase.js   ← bundled Supabase client (no CDN needed)
-├─ android/                ← native Android project
-│  └─ app/src/main/java/com/unibudget/app/
-│     ├─ GcashNotificationListener.java  ← reads GCash notifications
-│     ├─ GcashSmsReceiver.java           ← reads GCash SMS
-│     ├─ GcashCaptureStore.java          ← queue + system notification
-│     ├─ GcashWatcherPlugin.java         ← native ↔ JS bridge + permissions
-│     └─ MainActivity.java
-├─ supabase-schema.sql     ← run once in Supabase
-└─ capacitor.config.json
+├── UniBudget-debug.apk                  ← Installable Android build (sideload to phone)
+├── www/                                 ← Web application (HTML/CSS/JS)
+│   ├── index.html                       ← UI, Carousel, Modals, & Application Controller
+│   ├── wallet-engine.js                 ← Multi-wallet computation engine & migrations
+│   ├── cloud.js                         ← Supabase authentication & offline sync adapter
+│   ├── gcash-bridge.js                  ← Native Capacitor bridge for auto-capture
+│   ├── app-config.js                    ← ⚙️ Supabase URL & public anon key
+│   └── vendor/
+│       └── supabase.js                  ← Bundled Supabase client
+├── tests/                               ← Automated unit & integration test suite
+│   ├── wallet-engine.test.js            ← Balance math, defaults, & migration tests
+│   ├── wallet-transfer.test.js          ← Transfer debit/credit & fee tests
+│   └── wallet-full-integration.test.js  ← Full lifecycle (income, expense, transfer, reconcile)
+├── android/                             ← Native Android Capacitor project
+│   └── app/src/main/java/com/unibudget/app/
+│       ├── GcashNotificationListener.java ← Reads GCash/Maya notifications
+│       ├── GcashSmsReceiver.java          ← Reads SMS payment alerts
+│       ├── GcashCaptureStore.java         ← Queue + system notifications
+│       ├── GcashWatcherPlugin.java        ← Native ↔ JS Capacitor plugin
+│       └── MainActivity.java
+├── docs/superpowers/                    ← Specifications and implementation plans
+│   ├── specs/2026-08-17-multi-wallet-design.md
+│   └── plans/2026-08-17-multi-wallet-system.md
+├── supabase-schema.sql                  ← Database schema (run once in Supabase)
+├── package.json
+└── capacitor.config.json
 ```
 
 ---
 
-## 1) Set up Supabase (cloud accounts + sync)
+## 🧪 Testing
 
-1. Create a free project at **https://supabase.com** (New project → pick a name + database password → wait ~2 min).
-2. **SQL Editor** → **New query** → paste all of **`supabase-schema.sql`** → **Run**.
-3. **Authentication → Sign In / Providers → Email**: turn **"Confirm email" OFF** (so students can log in immediately without email verification). Leave it on if you prefer verified emails.
-4. **Project Settings → API**, copy two values:
+UniBudget includes an automated Node.js test suite for wallet engine computations and data migration:
+
+```bash
+# Run all automated tests
+node --test tests/*.test.js
+```
+
+**Test Coverage:**
+- `DEFAULT_WALLETS contains Cash, GCash, Maya, GoTyme`
+- `computeWalletBalances correctly computes starting balance, income, expense, and transfers`
+- `migrateTransactions backfills missing walletId appropriately`
+- `Full workflow: starting balance + income + expense + transfer + reconcile`
+- `Transfer correctly shifts funds between wallets with optional fee`
+
+---
+
+## ⚙️ 1. Set Up Supabase (Cloud Sync)
+
+1. Create a free project at **[supabase.com](https://supabase.com)**.
+2. Go to **SQL Editor** → **New query** → paste all of **`supabase-schema.sql`** → **Run**.
+3. **Authentication → Sign In / Providers → Email**: turn **"Confirm email" OFF** (for instant student login without email confirmation).
+4. **Project Settings → API**, copy:
    - **Project URL**
    - **anon public** key
 5. Open **`www/app-config.js`** and paste them in:
-   ```js
+   ```javascript
    window.UNIBUDGET_CONFIG = {
      SUPABASE_URL: "https://xxxxxxxx.supabase.co",
-     SUPABASE_ANON_KEY: "eyJhbGciOi....(the long anon key)...."
+     SUPABASE_ANON_KEY: "eyJhbGciOi....(anon key)...."
    };
    ```
-6. Re-sync + rebuild (see next section). Once keys are present the login screen shows **"☁ Cloud sync"** instead of "Device mode", and accounts + data sync across devices.
+6. Re-sync with `npx cap sync android`. Once keys are present, the app shows **"☁ Cloud sync"** and syncs accounts, wallets, and transactions across devices.
 
-> No keys yet? The app still works fully — it just stores accounts and data on the device only.
-
----
-
-## 2) Build the APK
-
-Everything is already configured (`android/local.properties` points at your SDK). Two ways:
-
-**A. Android Studio (easiest)**
-```
-npx cap open android
-```
-Wait for Gradle to finish, then **Build → Build Bundle(s)/APK(s) → Build APK(s)**.
-Find it at `android/app/build/outputs/apk/debug/app-debug.apk`.
-
-**B. Command line**
-```bash
-npx cap sync android
-cd android
-./gradlew assembleDebug          # Windows: .\gradlew.bat assembleDebug
-```
-
-Whenever you change anything in `www/`, run **`npx cap sync android`** before rebuilding.
+> **Note:** Without Supabase keys, UniBudget runs seamlessly in offline **Device Mode** using localStorage.
 
 ---
 
-## 3) Install on your phone
+## 🛠️ 2. Build the Android APK
 
-1. Copy **`UniBudget-debug.apk`** to the phone (USB, Google Drive, or email to yourself).
-2. Tap it. Android will ask to allow installing from this source → **Allow** → **Install**.
-3. Open **UniBudget**, sign up / log in.
+1. **Sync web assets to Android:**
+   ```bash
+   npx cap sync android
+   ```
 
-*(This is a debug-signed APK — perfect for personal use and sideloading. For the Play Store you'd need a signed release build, and note the SMS/notification-reading features are unlikely to pass Play review — sideloading is the intended path.)*
-
----
-
-## 4) Turn on GCash auto-detection
-
-In the app: **avatar menu (top-right) → 🔗 Connect GCash**, then grant the three items:
-
-| Step | What it does | Where |
-|------|--------------|-------|
-| **Notification access** | Reads GCash's notifications (the main source) | Opens Android's Notification-access list → enable **"UniBudget GCash detector"** |
-| **SMS access** | Backup for GCash text alerts | In-app permission prompt |
-| **Show notifications** | Lets the app alert you (Android 13+) | In-app permission prompt |
-
-Make sure **GCash itself has notifications enabled** (GCash app → its notification settings), since notifications are the primary signal.
+2. **Build Debug APK:**
+   - **Via Android Studio (GUI):**
+     ```bash
+     npx cap open android
+     ```
+     Wait for Gradle to finish, then go to **Build → Build Bundle(s)/APK(s) → Build APK(s)**.
+   - **Via Command Line:**
+     ```bash
+     cd android
+     ./gradlew assembleDebug      # Windows: .\gradlew.bat assembleDebug
+     ```
+   Output APK: `android/app/build/outputs/apk/debug/app-debug.apk` (or root `UniBudget-debug.apk`).
 
 ---
 
-## 5) How it works / how to test
+## 📱 3. Installation & Auto-Capture Setup
 
-- GCash posts a notification like *"You have received PHP 500.00 from JUAN D…"*.
-- The native listener catches it (app open **or** closed), and:
-  - shows you a notification (**"Money in ₱500 · Auto-logged to UniBudget"**), and
-  - hands the text to the app, which parses amount + direction (received → income, sent/paid → expense), guesses a category, and adds the transaction — updating balance, category bars, and (if configured) Supabase.
-- Captures that arrive while the app is closed are queued and applied the next time you open it.
-
-**Quick test without spending money:** send yourself an SMS containing text like
-`GCash: You received PHP 250.00 from TEST. Your balance is PHP 1,000.00`
-— the SMS receiver will parse it and log ₱250 as income.
+1. Copy `UniBudget-debug.apk` to your Android phone and install it (**Allow from this source** if prompted).
+2. Open **UniBudget** and log in or sign up.
+3. Tap **Avatar menu (top-right) → 🔗 Connect GCash**, and grant permissions:
+   - **Notification Access**: Enables reading payment alerts from GCash, Maya, and bank apps.
+   - **SMS Access**: Backup detection for SMS confirmation alerts.
+   - **Show Notifications**: Displays in-app confirmation chips when a transaction is auto-captured.
 
 ---
 
-## Notes & limits
+## 📝 Changelog Summary
 
-- **Parsing** covers common GCash phrasings (received / sent / paid / cash-in / cash-out / bills payment). If GCash changes wording or you spot a message that isn't caught, the patterns live in `www/index.html` (`parseGcash`) and `GcashCaptureStore.java` (`looksLikeGcash`) — easy to extend.
-- **Duplicates** are guarded: the same amount+type within 90 seconds is ignored (a notification and its SMS won't double-count).
-- **Currency switch** changes the symbol only, not exchange rates.
-- Data is cached on-device and synced to Supabase when keys are set and you're online.
+### v1.0.0 (Multi-Wallet Release)
+- ✨ **Multi-Wallet Engine**: Added default wallets (Cash, GCash, Maya, GoTyme) + custom wallet support.
+- 🎨 **Horizontal Wallet Carousel**: Added carousel layout with active glowing borders, real-time balance previews, and tap-to-filter.
+- 🔄 **Account Transfers**: Introduced inter-wallet transfers with optional fee deduction.
+- ⚖️ **Balance Reconciliation**: Introduced reconciliation modal to adjust discrepancies between real-world cash/e-wallets and tracked balances.
+- 🏷️ **Transaction Account Routing & Badges**: Added wallet badges to transaction records and wallet selector to Add Transaction form.
+- ☁️ **Cloud Synchronization**: Extended Supabase sync schema to persist and merge multi-wallet configurations across devices.
+- 🧪 **Automated Test Suite**: Added 5 comprehensive unit and integration tests under `tests/`.
