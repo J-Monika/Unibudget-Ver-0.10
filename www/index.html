@@ -999,6 +999,7 @@
 <script src="vendor/capacitor.js"></script>
 <script src="vendor/supabase.js"></script>
 <script src="app-config.js"></script>
+<script src="wallet-engine.js"></script>
 <script src="cloud.js"></script>
 <script>
 (function () {
@@ -1059,15 +1060,20 @@
 
   function seedState() {
     var demo = (!window.Cloud || !Cloud.enabled) ? [
-      { id: id(), desc:"Allowance", amount:3200, type:"income", cat:"Allowance & Aid", ts: now()-86400000*2, updated_at: now()-86400000*2, deleted:false },
-      { id: id(), desc:"Jollibee Food", amount:547, type:"expense", cat:"Food & Dining", ts: now()-86400000, updated_at: now()-86400000, deleted:false },
-      { id: id(), desc:"Dorm Rent", amount:430, type:"expense", cat:"Rent & Utilities", ts: now()-43200000, updated_at: now()-43200000, deleted:false },
-      { id: id(), desc:"Textbooks & Paper", amount:352, type:"expense", cat:"Books & Supplies", ts: now()-30000000, updated_at: now()-30000000, deleted:false },
-      { id: id(), desc:"Cinema & Outing", amount:293, type:"expense", cat:"Fun & Social", ts: now()-20000000, updated_at: now()-20000000, deleted:false },
-      { id: id(), desc:"Jeepney & Bus", amount:234, type:"expense", cat:"Transportation", ts: now()-10000000, updated_at: now()-10000000, deleted:false },
-      { id: id(), desc:"Mobile Data Load", amount:98.2, type:"expense", cat:"Load & Data", ts: now()-5000000, updated_at: now()-5000000, deleted:false }
+      { id: id(), desc:"Allowance", amount:3200, type:"income", cat:"Allowance & Aid", walletId:"w-gotyme", ts: now()-86400000*2, updated_at: now()-86400000*2, deleted:false },
+      { id: id(), desc:"Jollibee Food", amount:547, type:"expense", cat:"Food & Dining", walletId:"w-gcash", ts: now()-86400000, updated_at: now()-86400000, deleted:false },
+      { id: id(), desc:"Dorm Rent", amount:430, type:"expense", cat:"Rent & Utilities", walletId:"w-gotyme", ts: now()-43200000, updated_at: now()-43200000, deleted:false },
+      { id: id(), desc:"Textbooks & Paper", amount:352, type:"expense", cat:"Books & Supplies", walletId:"w-cash", ts: now()-30000000, updated_at: now()-30000000, deleted:false },
+      { id: id(), desc:"Cinema & Outing", amount:293, type:"expense", cat:"Fun & Social", walletId:"w-maya", ts: now()-20000000, updated_at: now()-20000000, deleted:false },
+      { id: id(), desc:"Jeepney & Bus", amount:234, type:"expense", cat:"Transportation", walletId:"w-cash", ts: now()-10000000, updated_at: now()-10000000, deleted:false },
+      { id: id(), desc:"Mobile Data Load", amount:98.2, type:"expense", cat:"Load & Data", walletId:"w-gcash", ts: now()-5000000, updated_at: now()-5000000, deleted:false }
     ] : [];
-    return { currency: "PHP", limits: Object.assign({}, DEFAULT_LIMITS), txns: demo };
+    return {
+      currency: "PHP",
+      limits: Object.assign({}, DEFAULT_LIMITS),
+      wallets: window.WalletEngine ? WalletEngine.normalizeWallets() : [],
+      txns: demo
+    };
   }
 
   function normalizeState(s) {
@@ -1075,10 +1081,17 @@
     if (!s.currency) s.currency = "PHP";
     if (!s.limits || !Object.keys(s.limits).length) s.limits = Object.assign({}, DEFAULT_LIMITS);
     if (!s.allowance) s.allowance = { amount: 0, period: "weekly", anchor: 0, reserve: 0 };
+    if (window.WalletEngine) {
+      s.wallets = WalletEngine.normalizeWallets(s.wallets);
+      s.txns = WalletEngine.migrateTransactions(s.txns);
+    } else {
+      if (!Array.isArray(s.wallets)) s.wallets = [];
+    }
     if (!Array.isArray(s.txns)) s.txns = [];
     if (!Array.isArray(s.utangs)) s.utangs = [];
     s.txns.forEach(function(t){
       if (!t.id) t.id = id();
+      if (!t.walletId) t.walletId = "w-cash";
       if (typeof t.ts !== "number") t.ts = now();
       if (typeof t.updated_at !== "number") t.updated_at = t.ts;
       if (typeof t.deleted !== "boolean") t.deleted = false;
