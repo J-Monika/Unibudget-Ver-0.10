@@ -234,39 +234,78 @@
   .color-dot-btn:hover { transform: scale(1.15); }
   .color-dot-btn.selected { border-color: #fff; box-shadow: 0 0 0 2px var(--accent); }
 
-  /* ---------- Interactive Donut Chart Card ---------- */
+  /* ---------- Semi-Circular Rainbow Gauge Arch ---------- */
   .chart-card {
-    padding: 24px 20px;
+    padding: 20px 16px 14px;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
   }
-  .donut-wrap {
-    width: 100%; max-width: 290px; aspect-ratio: 1/1;
+  .arch-wrap {
+    width: 100%; max-width: 320px; aspect-ratio: 300 / 175;
     position: relative; display: flex; align-items: center; justify-content: center;
   }
-  .donut-svg {
+  .arch-svg {
     width: 100%; height: 100%; overflow: visible;
   }
-  .donut-slice {
-    transition: opacity .2s, transform .2s;
+  .arch-track {
+    fill: rgba(255, 255, 255, 0.05);
+    stroke: var(--line);
+    stroke-width: 1px;
+    stroke-linejoin: round;
+  }
+  .arch-segment {
     cursor: pointer;
+    transition: transform .18s ease, filter .18s ease, opacity .18s ease;
+    transform-origin: 150px 150px;
   }
-  .donut-slice:hover { opacity: .9; }
-  .donut-slice-pct {
-    fill: #ffffff; font-size: 11.5px; font-weight: 800;
-    font-family: inherit; pointer-events: none;
-    text-shadow: 0 1px 3px rgba(0,0,0,.6);
+  .arch-segment:hover {
+    filter: brightness(1.18) drop-shadow(0 4px 12px rgba(0,0,0,.4));
+    transform: scale(1.025);
   }
-  .donut-center-amt {
-    fill: #ffffff; font-size: 20px; font-weight: 800;
-    font-family: inherit; font-variant-numeric: tabular-nums;
+  .arch-segment.active {
+    filter: brightness(1.25) drop-shadow(0 0 10px rgba(255,255,255,.4));
+    stroke: #ffffff !important;
+    stroke-width: 3.5px !important;
   }
-  .donut-center-sub {
-    fill: var(--muted); font-size: 13px; font-weight: 700;
-    font-family: inherit; font-variant-numeric: tabular-nums;
+  .arch-icon {
+    pointer-events: none;
+    user-select: none;
+    font-size: 14px;
   }
-  .donut-center-lbl {
-    fill: var(--muted); font-size: 11.5px; font-weight: 700;
-    font-family: inherit; letter-spacing: .02em;
+  .arch-center-group {
+    cursor: pointer;
+    user-select: none;
+  }
+  .arch-center-label {
+    fill: var(--muted);
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: .02em;
+    font-family: inherit;
+    transition: fill .2s;
+  }
+  .arch-center-amt {
+    fill: #ffffff;
+    font-size: 23px;
+    font-weight: 800;
+    font-family: inherit;
+    font-variant-numeric: tabular-nums;
+    transition: fill .2s;
+  }
+  .arch-center-amt.over {
+    fill: var(--spent);
+  }
+  .arch-center-sub {
+    fill: var(--muted);
+    font-size: 11.5px;
+    font-weight: 600;
+    font-family: inherit;
+    font-variant-numeric: tabular-nums;
+    transition: fill .2s;
+  }
+  .arch-center-sub.over {
+    fill: var(--spent);
+    font-weight: 700;
   }
 
   /* ---------- Section Headers ---------- */
@@ -861,10 +900,10 @@
       </div>
     </section>
 
-    <!-- 2. DONUT CHART CARD -->
+    <!-- 2. RAINBOW GAUGE ARCH CARD -->
     <section class="card chart-card" id="donutCard">
-      <div class="donut-wrap">
-        <svg id="donutSvg" viewBox="0 0 300 300" class="donut-svg"></svg>
+      <div class="arch-wrap">
+        <svg id="donutSvg" viewBox="0 0 300 175" class="arch-svg"></svg>
       </div>
     </section>
 
@@ -1461,38 +1500,27 @@
   var el = function(sel){ return document.querySelector(sel); };
   var typeVal = "expense";
 
-  // ---------- Arc & Donut SVG Utilities ----------
-  function describeArcSector(cx, cy, R, r, startAngle, endAngle) {
-    if (endAngle - startAngle >= 359.99) {
-      return describeDonutRing(cx, cy, R, r);
-    }
-    var a0 = (startAngle - 90) * Math.PI / 180;
-    var a1 = (endAngle - 90) * Math.PI / 180;
+  // ---------- Semi-Circular Rainbow Gauge Arch Utilities ----------
+  var selectedArchCat = null;
 
-    var x0_out = cx + R * Math.cos(a0), y0_out = cy + R * Math.sin(a0);
-    var x1_out = cx + R * Math.cos(a1), y1_out = cy + R * Math.sin(a1);
-    var x1_in  = cx + r * Math.cos(a1), y1_in  = cy + r * Math.sin(a1);
-    var x0_in  = cx + r * Math.cos(a0), y0_in  = cy + r * Math.sin(a0);
+  function describeArchSector(cx, cy, R, r, startAngle, endAngle) {
+    var a0 = startAngle * Math.PI / 180;
+    var a1 = endAngle * Math.PI / 180;
 
-    var largeArc = (endAngle - startAngle) > 180 ? 1 : 0;
+    var x0_out = (cx + R * Math.cos(a0)).toFixed(2);
+    var y0_out = (cy + R * Math.sin(a0)).toFixed(2);
+    var x1_out = (cx + R * Math.cos(a1)).toFixed(2);
+    var y1_out = (cy + R * Math.sin(a1)).toFixed(2);
+    var x1_in  = (cx + r * Math.cos(a1)).toFixed(2);
+    var y1_in  = (cy + r * Math.sin(a1)).toFixed(2);
+    var x0_in  = (cx + r * Math.cos(a0)).toFixed(2);
+    var y0_in  = (cy + r * Math.sin(a0)).toFixed(2);
 
     return [
-      "M", x0_out.toFixed(2), y0_out.toFixed(2),
-      "A", R, R, 0, largeArc, 1, x1_out.toFixed(2), y1_out.toFixed(2),
-      "L", x1_in.toFixed(2), y1_in.toFixed(2),
-      "A", r, r, 0, largeArc, 0, x0_in.toFixed(2), y0_in.toFixed(2),
-      "Z"
-    ].join(" ");
-  }
-
-  function describeDonutRing(cx, cy, R, r) {
-    return [
-      "M", cx, cy - R,
-      "A", R, R, 0, 1, 0, cx, cy + R,
-      "A", R, R, 0, 1, 0, cx, cy - R,
-      "M", cx, cy - r,
-      "A", r, r, 0, 1, 1, cx, cy + r,
-      "A", r, r, 0, 1, 1, cx, cy - r,
+      "M", x0_out, y0_out,
+      "A", R, R, 0, 0, 1, x1_out, y1_out,
+      "L", x1_in, y1_in,
+      "A", r, r, 0, 0, 0, x0_in, y0_in,
       "Z"
     ].join(" ");
   }
@@ -1502,86 +1530,131 @@
     if (!svg) return;
     svg.innerHTML = "";
 
-    var cx = 150, cy = 150, R = 120, r = 76;
+    var cx = 150, cy = 150, R = 125, r = 78;
 
-    // Background track ring
-    var bgCircle = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    bgCircle.setAttribute("d", describeDonutRing(cx, cy, R, r));
-    bgCircle.setAttribute("fill", "var(--track)");
-    bgCircle.setAttribute("opacity", "0.65");
-    svg.appendChild(bgCircle);
+    // 1. Background full semi-circular track (180° to 360°)
+    var bgTrack = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    bgTrack.setAttribute("d", describeArchSector(cx, cy, R, r, 180, 360));
+    bgTrack.setAttribute("class", "arch-track");
+    svg.appendChild(bgTrack);
 
     var activeCats = Object.keys(perCat).filter(function(k){ return perCat[k] > 0; });
+    var isOver = totalBudget > 0 && spent > totalBudget;
+    var effectiveBudget = totalBudget > 0 ? totalBudget : (spent > 0 ? spent : 2500);
+
+    // Arch progress: 100% of budget = 180 degrees
+    var totalProgress = Math.min(1.0, spent > 0 ? (spent / effectiveBudget) : 0);
+    var totalSpentAngleSpan = totalProgress * 180;
 
     if (spent > 0 && activeCats.length > 0) {
-      var startAngle = 0;
+      var curAngle = 180;
       activeCats.sort(function(a, b){ return perCat[b] - perCat[a]; });
 
       activeCats.forEach(function(catName){
         var amt = perCat[catName];
-        var fraction = amt / spent;
-        var angleSpan = fraction * 360;
-        var endAngle = startAngle + angleSpan;
+        var catShareOfSpent = amt / spent;
+        var segSpan = catShareOfSpent * totalSpentAngleSpan;
+        if (segSpan <= 0.3) return;
+
+        var gap = (activeCats.length > 1 && segSpan >= 5) ? 2.5 : 0;
+        var aStart = curAngle + gap / 2;
+        var aEnd = curAngle + segSpan - gap / 2;
+        if (aEnd < aStart) aEnd = aStart;
+
         var color = CAT_COLORS[catName] || "#6366f1";
-        var pct = Math.round(fraction * 100);
+        var isSelected = selectedArchCat === catName;
 
         var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        var gap = activeCats.length > 1 ? 1.5 : 0;
-        path.setAttribute("d", describeArcSector(cx, cy, R, r, startAngle, endAngle - gap));
+        path.setAttribute("d", describeArchSector(cx, cy, R, r, aStart, aEnd));
         path.setAttribute("fill", color);
-        path.setAttribute("class", "donut-slice");
+        path.setAttribute("stroke", color);
+        path.setAttribute("stroke-width", "3.5");
+        path.setAttribute("stroke-linejoin", "round");
+        path.setAttribute("stroke-linecap", "round");
+        path.setAttribute("class", "arch-segment" + (isSelected ? " active" : ""));
+        path.setAttribute("data-cat", catName);
+
+        // Click handler to inspect category
+        path.addEventListener("click", function(e){
+          e.stopPropagation();
+          selectedArchCat = (selectedArchCat === catName) ? null : catName;
+          renderDonutChart(perCat, spent, totalBudget);
+        });
+
         svg.appendChild(path);
 
-        // Percentage label directly on the slice
-        if (pct >= 5) {
-          var midAngle = startAngle + angleSpan / 2;
-          var rad = (midAngle - 90) * Math.PI / 180;
-          var labelR = (R + r) / 2;
-          var lx = cx + labelR * Math.cos(rad);
-          var ly = cy + labelR * Math.sin(rad);
+        // Render emoji icon inside segment if wide enough
+        if (segSpan >= 13) {
+          var aMid = (curAngle + segSpan / 2) * Math.PI / 180;
+          var rMid = (R + r) / 2;
+          var ix = (cx + rMid * Math.cos(aMid)).toFixed(1);
+          var iy = (cy + rMid * Math.sin(aMid) + 1).toFixed(1);
 
-          var txt = document.createElementNS("http://www.w3.org/2000/svg", "text");
-          txt.setAttribute("x", lx.toFixed(1));
-          txt.setAttribute("y", (ly + 1).toFixed(1));
-          txt.setAttribute("text-anchor", "middle");
-          txt.setAttribute("dominant-baseline", "central");
-          txt.setAttribute("class", "donut-slice-pct");
-          txt.textContent = pct + "%";
-          svg.appendChild(txt);
+          var iconText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          iconText.setAttribute("x", ix);
+          iconText.setAttribute("y", iy);
+          iconText.setAttribute("text-anchor", "middle");
+          iconText.setAttribute("dominant-baseline", "central");
+          iconText.setAttribute("class", "arch-icon");
+          iconText.textContent = catIcon(catName, "expense");
+          svg.appendChild(iconText);
         }
 
-        startAngle = endAngle;
+        curAngle += segSpan;
       });
     }
 
-    // Center stats group
+    // 2. Center Content Group
     var centerG = document.createElementNS("http://www.w3.org/2000/svg", "g");
-    centerG.setAttribute("class", "donut-center-group");
+    centerG.setAttribute("class", "arch-center-group");
+    centerG.addEventListener("click", function(){
+      selectedArchCat = null;
+      renderDonutChart(perCat, spent, totalBudget);
+    });
+
+    var labelTxt = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    labelTxt.setAttribute("x", "150");
+    labelTxt.setAttribute("y", "94");
+    labelTxt.setAttribute("text-anchor", "middle");
+    labelTxt.setAttribute("class", "arch-center-label");
 
     var amtTxt = document.createElementNS("http://www.w3.org/2000/svg", "text");
     amtTxt.setAttribute("x", "150");
-    amtTxt.setAttribute("y", "130");
+    amtTxt.setAttribute("y", "124");
     amtTxt.setAttribute("text-anchor", "middle");
-    amtTxt.setAttribute("class", "donut-center-amt");
-    amtTxt.textContent = fmt(spent);
+    amtTxt.setAttribute("class", "arch-center-amt" + (isOver ? " over" : ""));
+
+    var subTxt = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    subTxt.setAttribute("x", "150");
+    subTxt.setAttribute("y", "145");
+    subTxt.setAttribute("text-anchor", "middle");
+    subTxt.setAttribute("class", "arch-center-sub" + (isOver ? " over" : ""));
+
+    if (selectedArchCat && perCat[selectedArchCat] !== undefined) {
+      var selAmt = perCat[selectedArchCat] || 0;
+      var selLimit = (state && state.limits && state.limits[selectedArchCat]) || 0;
+      var selShare = spent > 0 ? Math.round((selAmt / spent) * 100) : 0;
+
+      labelTxt.textContent = catIcon(selectedArchCat, "expense") + " " + selectedArchCat;
+      amtTxt.textContent = fmt(selAmt);
+      subTxt.textContent = selLimit > 0
+        ? (selShare + "% · " + (selAmt > selLimit ? "Over by " + fmt(selAmt - selLimit) : fmt(selLimit - selAmt) + " left"))
+        : (selShare + "% of spent");
+    } else {
+      labelTxt.textContent = "Spent";
+      amtTxt.textContent = fmt(spent);
+      if (isOver) {
+        subTxt.textContent = "Over by " + fmt(spent - totalBudget);
+      } else if (totalBudget > 0) {
+        subTxt.textContent = "of " + fmt(totalBudget) + " budget";
+      } else {
+        subTxt.textContent = activeCats.length + " categories";
+      }
+    }
+
+    centerG.appendChild(labelTxt);
     centerG.appendChild(amtTxt);
-
-    var budgetTxt = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    budgetTxt.setAttribute("x", "150");
-    budgetTxt.setAttribute("y", "155");
-    budgetTxt.setAttribute("text-anchor", "middle");
-    budgetTxt.setAttribute("class", "donut-center-sub");
-    budgetTxt.textContent = "/ " + fmt(totalBudget);
-    centerG.appendChild(budgetTxt);
-
-    var lblTxt = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    lblTxt.setAttribute("x", "150");
-    lblTxt.setAttribute("y", "174");
-    lblTxt.setAttribute("text-anchor", "middle");
-    lblTxt.setAttribute("class", "donut-center-lbl");
-    lblTxt.textContent = "Spent/Budget";
-    centerG.appendChild(lblTxt);
-
+    centerG.appendChild(subTxt);
     svg.appendChild(centerG);
   }
 
