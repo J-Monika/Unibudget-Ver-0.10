@@ -1543,24 +1543,34 @@
     var isOver = totalBudget > 0 && spent > totalBudget;
     var effectiveBudget = totalBudget > 0 ? totalBudget : (spent > 0 ? spent : 2500);
 
-    // Arch progress: 100% of budget = 180 degrees
-    var totalProgress = Math.min(1.0, spent > 0 ? (spent / effectiveBudget) : 0);
-    var totalSpentAngleSpan = totalProgress * 180;
+    var numCats = activeCats.length;
+    var minPillDeg = 8.5; // Minimum visible arc per active category
+    var minTotalDeg = numCats * minPillDeg;
 
-    if (spent > 0 && activeCats.length > 0) {
+    // Arch progress: 100% of budget = 180 degrees
+    var rawProgress = spent > 0 ? (spent / effectiveBudget) : 0;
+    var rawSpentSpan = Math.min(1.0, rawProgress) * 180;
+    var totalSpentAngleSpan = Math.max(rawSpentSpan, Math.min(180, minTotalDeg));
+
+    if (spent > 0 && numCats > 0) {
       var curAngle = 180;
       activeCats.sort(function(a, b){ return perCat[b] - perCat[a]; });
 
-      activeCats.forEach(function(catName){
-        var amt = perCat[catName];
-        var catShareOfSpent = amt / spent;
-        var segSpan = catShareOfSpent * totalSpentAngleSpan;
-        if (segSpan <= 0.3) return;
+      // Calculate each category span with min-width distribution so they never overlap
+      var rawSpans = activeCats.map(function(c){
+        return Math.max(minPillDeg, (perCat[c] / spent) * totalSpentAngleSpan);
+      });
+      var sumSpans = rawSpans.reduce(function(a, b){ return a + b; }, 0);
+      var scale = sumSpans > 0 ? (totalSpentAngleSpan / sumSpans) : 1;
 
-        var gap = (activeCats.length > 1 && segSpan >= 5) ? 2.5 : 0;
+      activeCats.forEach(function(catName, idx){
+        var segSpan = rawSpans[idx] * scale;
+        if (segSpan <= 1.0) return;
+
+        var gap = (numCats > 1) ? 2.5 : 0;
         var aStart = curAngle + gap / 2;
         var aEnd = curAngle + segSpan - gap / 2;
-        if (aEnd < aStart) aEnd = aStart;
+        if (aEnd - aStart < 1.5) aEnd = aStart + 1.5;
 
         var color = CAT_COLORS[catName] || "#6366f1";
         var isSelected = selectedArchCat === catName;
@@ -1569,7 +1579,7 @@
         path.setAttribute("d", describeArchSector(cx, cy, R, r, aStart, aEnd));
         path.setAttribute("fill", color);
         path.setAttribute("stroke", color);
-        path.setAttribute("stroke-width", "3.5");
+        path.setAttribute("stroke-width", "1.5");
         path.setAttribute("stroke-linejoin", "round");
         path.setAttribute("stroke-linecap", "round");
         path.setAttribute("class", "arch-segment" + (isSelected ? " active" : ""));
@@ -1585,7 +1595,7 @@
         svg.appendChild(path);
 
         // Render emoji icon inside segment if wide enough
-        if (segSpan >= 13) {
+        if (segSpan >= 12) {
           var aMid = (curAngle + segSpan / 2) * Math.PI / 180;
           var rMid = (R + r) / 2;
           var ix = (cx + rMid * Math.cos(aMid)).toFixed(1);
@@ -2835,8 +2845,17 @@
     });
   }
 
+  // Global outside-click listener to dismiss selected category on Rainbow Arch
+  document.addEventListener("click", function(e){
+    if (selectedArchCat && !e.target.closest(".arch-segment")) {
+      selectedArchCat = null;
+      render();
+    }
+  });
+
   document.addEventListener("keydown", function(e){
     if (e.key === "Escape"){
+      if (selectedArchCat) { selectedArchCat = null; render(); }
       closeGoals(); closeAllowance(); closeAchievements(); closeAddModal();
       closeAddUtang(); closePayUtang(); closePaidUtangs();
       closeTransfer(); closeReconcile(); closeWalletModal();
