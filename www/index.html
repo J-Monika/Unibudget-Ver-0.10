@@ -872,6 +872,7 @@
           <button class="menu-item" id="baonBtn">💸 Safe to spend (baon)</button>
           <button class="menu-item" id="rewardsBtn">🏆 Rewards</button>
           <button class="menu-item" id="connectGcashBtn">🔗 Connect GCash</button>
+          <button class="menu-item" id="menuExport">📥 Export to Spreadsheet (CSV)</button>
           <button class="menu-item danger" id="menuLogout">↪ Log out</button>
         </div>
       </div>
@@ -929,7 +930,7 @@
     <section class="card txns-card">
       <div class="sec-head">
         <h2>Recent Transactions</h2>
-        <span class="side"><span class="link" id="syncNow">🔄 Sync</span> &nbsp; <span class="link" id="clearAll" style="color:var(--spent)">Clear All</span></span>
+        <span class="side"><span class="link" id="exportTxns" title="Export transactions to CSV">📥 Export</span> &nbsp; <span class="link" id="syncNow">🔄 Sync</span> &nbsp; <span class="link" id="clearAll" style="color:var(--spent)">Clear All</span></span>
       </div>
 
       <!-- Search & Filter Controls -->
@@ -1360,6 +1361,7 @@
 <script src="vendor/supabase.js"></script>
 <script src="app-config.js"></script>
 <script src="wallet-engine.js"></script>
+<script src="export-engine.js"></script>
 <script src="cloud.js"></script>
 <script>
 (function () {
@@ -2865,6 +2867,42 @@
   var syncFn = function(){ save(); toast("Saved to this device ✓"); };
   el("#syncBtn").addEventListener("click", syncFn);
   el("#syncNow").addEventListener("click", syncFn);
+
+  function exportCurrentTransactions(){
+    if (!state || !window.ExportEngine) {
+      toast("Export engine not ready");
+      return;
+    }
+    var list = filteredTxns();
+    if (!list || !list.length) {
+      toast("No transactions to export");
+      return;
+    }
+
+    var isFiltered = !!(currentSearchQuery || currentDateFilter !== "all" || currentTypeFilter !== "all" || selectedWalletFilter);
+    var activeWalletObj = selectedWalletFilter ? getWalletById(selectedWalletFilter) : null;
+    var filename = ExportEngine.generateExportFilename({
+      isFiltered: isFiltered,
+      walletName: activeWalletObj ? activeWalletObj.name : null
+    });
+
+    var csvContent = ExportEngine.generateTransactionsCsv(list, state.wallets, state.currency);
+    ExportEngine.triggerCsvDownload(csvContent, filename).then(function(res){
+      if (res && res.success) {
+        toast("📥 Exported " + list.length + " record" + (list.length === 1 ? "" : "s") + " to " + filename);
+      } else {
+        toast("Export failed. Please try again.");
+      }
+    });
+  }
+
+  var expBtn = el("#exportTxns");
+  if (expBtn) expBtn.addEventListener("click", exportCurrentTransactions);
+  var menuExpBtn = el("#menuExport");
+  if (menuExpBtn) menuExpBtn.addEventListener("click", function(){
+    el("#menuPop").classList.remove("show");
+    exportCurrentTransactions();
+  });
 
   // Auto-wallet ingestion (GCash, Maya, etc.)
   function redactPII(s){
