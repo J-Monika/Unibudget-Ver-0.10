@@ -75,14 +75,14 @@ test('getWalletName resolves wallet ID to display name with fallback', () => {
   assert.equal(ExportEngine.getWalletName('', sampleWallets), '');
 });
 
-test('generateTransactionsCsv produces UTF-8 BOM, standard headers, and correctly formatted rows', () => {
+test('generateTransactionsCsv produces UTF-8 BOM, standard headers, data rows, and summary totals', () => {
   const csv = ExportEngine.generateTransactionsCsv(sampleTxns, sampleWallets, 'PHP');
   
   // Must start with UTF-8 BOM
   assert.equal(csv.startsWith('\uFEFF'), true);
 
   const lines = csv.slice(1).trim().split('\n');
-  assert.equal(lines.length, 4); // Header + 3 active txns (tx-4 is deleted)
+  assert.equal(lines.length, 9); // Header + 3 txns + blank + Summary Hdr + Income + Spent + Net
 
   // Header verification
   assert.equal(lines[0], 'Date,Time,Description,Type,Category,Account,To Account,Amount,Currency,Fee,Source / Notes,Transaction ID');
@@ -111,6 +111,15 @@ test('generateTransactionsCsv produces UTF-8 BOM, standard headers, and correctl
   assert.ok(lines[3].includes('-1000.00'));
   assert.ok(lines[3].includes('15.00'));
   assert.ok(lines[3].includes('Allowance transfer'));
+
+  // Summary Rows Verification
+  assert.ok(lines[5].includes('--- SUMMARY ---'));
+  assert.ok(lines[6].includes('Total Income'));
+  assert.ok(lines[6].includes('5000.00'));
+  assert.ok(lines[7].includes('Total Spent'));
+  assert.ok(lines[7].includes('-265.50')); // 250.50 expense + 15.00 fee
+  assert.ok(lines[8].includes('Net Balance (Cash Flow)'));
+  assert.ok(lines[8].includes('4734.50')); // 5000 - 265.50
 });
 
 test('generateExportFilename generates context-aware filenames', () => {
@@ -123,3 +132,23 @@ test('generateExportFilename generates context-aware filenames', () => {
   const filteredName = ExportEngine.generateExportFilename({ isFiltered: true, dateStr: '2026-08-18' });
   assert.equal(filteredName, 'unibudget-filtered-2026-08-18.csv');
 });
+
+test('computeSummaryMetrics accurately computes totals and net balances', () => {
+  const metrics = ExportEngine.computeSummaryMetrics(sampleTxns, sampleWallets);
+  assert.equal(metrics.recordCount, 3);
+  assert.equal(metrics.totalIncome, 5000);
+  assert.equal(metrics.totalSpent, 265.5);
+  assert.equal(metrics.netBalance, 4734.5);
+});
+
+test('generateTransactionsCsv excludes balance adjustments from CSV export', () => {
+  const txnsWithAdj = [
+    ...sampleTxns,
+    { id: 'tx-adj', desc: 'Balance Adjustment (Cash)', amount: 200, type: 'adjustment', cat: 'Adjustment', walletId: 'w-cash', ts: fixedTs, deleted: false }
+  ];
+  const csv = ExportEngine.generateTransactionsCsv(txnsWithAdj, sampleWallets, 'PHP');
+  assert.equal(csv.includes('Balance Adjustment'), false);
+  const lines = csv.slice(1).trim().split('\n');
+  assert.equal(lines.length, 9); // Header + 3 active txns + blank + summary (excludes tx-4 and tx-adj)
+});
+

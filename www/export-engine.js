@@ -79,10 +79,64 @@
     return amt.toFixed(2);
   }
 
-  function generateTransactionsCsv(txns, wallets, defaultCurrency) {
+  function computeSummaryMetrics(txns, wallets, options) {
+    var opts = options || {};
+    var activeList = Array.isArray(txns) ? txns.filter(function (t) { return t && !t.deleted && t.type !== "adjustment"; }) : [];
+    var totalIncome = 0;
+    var totalSpent = 0;
+    var totalFees = 0;
+
+    activeList.forEach(function (t) {
+      var amt = Number(t.amount) || 0;
+      if (t.type === "income") {
+        totalIncome += amt;
+      } else if (t.type === "expense") {
+        totalSpent += amt;
+      } else if (t.type === "transfer") {
+        if (t.fee && t.fee > 0) {
+          totalFees += Number(t.fee);
+          totalSpent += Number(t.fee);
+        }
+      }
+    });
+
+    totalIncome = Math.round(totalIncome * 100) / 100;
+    totalSpent = Math.round(totalSpent * 100) / 100;
+    totalFees = Math.round(totalFees * 100) / 100;
+    var netBalance = Math.round((totalIncome - totalSpent) * 100) / 100;
+
+    var accountBalance = null;
+    var accountName = null;
+    if (opts.walletId && Array.isArray(wallets)) {
+      for (var i = 0; i < wallets.length; i++) {
+        if (wallets[i] && wallets[i].id === opts.walletId) {
+          accountName = wallets[i].name;
+          break;
+        }
+      }
+      if (opts.walletBalances && opts.walletBalances[opts.walletId]) {
+        accountBalance = opts.walletBalances[opts.walletId].balance;
+      }
+    }
+
+    var totalNetWorth = (opts.totalNetWorth !== undefined && opts.totalNetWorth !== null) ? opts.totalNetWorth : null;
+
+    return {
+      recordCount: activeList.length,
+      totalIncome: totalIncome,
+      totalSpent: totalSpent,
+      totalFees: totalFees,
+      netBalance: netBalance,
+      accountName: accountName,
+      accountBalance: accountBalance,
+      totalNetWorth: totalNetWorth
+    };
+  }
+
+  function generateTransactionsCsv(txns, wallets, defaultCurrency, options) {
     var currency = defaultCurrency || "PHP";
     var rows = [CSV_HEADERS.join(",")];
-    var activeList = Array.isArray(txns) ? txns.filter(function (t) { return t && !t.deleted; }) : [];
+    var activeList = Array.isArray(txns) ? txns.filter(function (t) { return t && !t.deleted && t.type !== "adjustment"; }) : [];
 
     activeList.forEach(function (t) {
       var dateStr = formatDate(t.ts);
@@ -115,6 +169,19 @@
       rows.push(row);
     });
 
+    // Append Summary Section
+    var summary = computeSummaryMetrics(activeList, wallets, options);
+    rows.push("");
+    rows.push(escapeCsvField("--- SUMMARY ---") + ",,,,,,,,,,");
+    rows.push(",,," + escapeCsvField("Total Income") + ",,,," + summary.totalIncome.toFixed(2) + "," + currency + ",,,");
+    rows.push(",,," + escapeCsvField("Total Spent") + ",,,,-" + summary.totalSpent.toFixed(2) + "," + currency + ",,,");
+    rows.push(",,," + escapeCsvField("Net Balance (Cash Flow)") + ",,,," + summary.netBalance.toFixed(2) + "," + currency + ",,,");
+    if (summary.accountName && summary.accountBalance !== null) {
+      rows.push(",,," + escapeCsvField("Account Balance (" + summary.accountName + ")") + ",,,," + Number(summary.accountBalance).toFixed(2) + "," + currency + ",,,");
+    } else if (summary.totalNetWorth !== null) {
+      rows.push(",,," + escapeCsvField("Total Net Worth") + ",,,," + Number(summary.totalNetWorth).toFixed(2) + "," + currency + ",,,");
+    }
+
     return UTF8_BOM + rows.join("\n");
   }
 
@@ -134,34 +201,62 @@
   function triggerCsvDownload(csvContent, filename) {
     return new Promise(function (resolve) {
       try {
-        var blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-        
-        // Check if Web Share API with files is available and supported
-        if (typeof navigator !== "undefined" && navigator.canShare && typeof File !== "undefined") {
-          var file = new File([blob], filename, { type: "text/csv" });
-          if (navigator.canShare({ files: [file] })) {
-            navigator.share({
-              files: [file],
-              title: "UniBudget Export",
-              text: "UniBudget Transactions Export"
-            }).then(function () {
-              resolve({ success: true, method: "share" });
-            }).catch(function () {
-              // User cancelled share or failed, fallback to direct download
-              directDownload(blob, filename);
-              resolve({ success: true, method: "download" });
+        // 1. Check for Capacitor native Android/iOS bridge
+        if (typeof window !== "undefined" && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.NativeExport) {
+          window.Capacitor.Plugins.NativeExport.exportCsv({
+            content: csvContent,
+            filename: filename,
+            share: true
+          }).then(function (res) {
+            resolve({
+              success: true,
+              method: "native",
+              filePath: (res && res.filePath) || ("/Download/" + filename)
             });
-            return;
-          }
+          }).catch(function (err) {
+            console.warn("Native export failed, trying web fallback:", err);
+            fallbackWebDownload(csvContent, filename, resolve);
+          });
+          return;
         }
 
-        // Direct standard blob download
-        directDownload(blob, filename);
-        resolve({ success: true, method: "download" });
+        // 2. Standard Web fallback
+        fallbackWebDownload(csvContent, filename, resolve);
       } catch (err) {
         resolve({ success: false, error: err });
       }
     });
+  }
+
+  function fallbackWebDownload(csvContent, filename, resolve) {
+    try {
+      var blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+
+      // Check if Web Share API with files is available and supported
+      if (typeof navigator !== "undefined" && navigator.canShare && typeof File !== "undefined") {
+        var file = new File([blob], filename, { type: "text/csv" });
+        if (navigator.canShare({ files: [file] })) {
+          navigator.share({
+            files: [file],
+            title: "UniBudget Export",
+            text: "UniBudget Transactions Export"
+          }).then(function () {
+            resolve({ success: true, method: "share", filePath: filename });
+          }).catch(function () {
+            // User cancelled share or failed, fallback to direct download
+            directDownload(blob, filename);
+            resolve({ success: true, method: "download", filePath: filename });
+          });
+          return;
+        }
+      }
+
+      // Direct standard blob download
+      directDownload(blob, filename);
+      resolve({ success: true, method: "download", filePath: filename });
+    } catch (err) {
+      resolve({ success: false, error: err });
+    }
   }
 
   function directDownload(blob, filename) {
@@ -185,6 +280,7 @@
     formatTime: formatTime,
     escapeCsvField: escapeCsvField,
     getWalletName: getWalletName,
+    computeSummaryMetrics: computeSummaryMetrics,
     generateTransactionsCsv: generateTransactionsCsv,
     generateExportFilename: generateExportFilename,
     triggerCsvDownload: triggerCsvDownload

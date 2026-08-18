@@ -52,7 +52,9 @@ test('Integration: full export lifecycle with filters and wallet calculations', 
   const allCsv = ExportEngine.generateTransactionsCsv(txns, wallets, 'PHP');
   assert.ok(allCsv.startsWith('\uFEFF'));
   const allLines = allCsv.slice(1).trim().split('\n');
-  assert.equal(allLines.length, 4); // 1 header + 3 rows
+  assert.equal(allLines.length, 9); // 1 header + 3 rows + blank + 4 summary rows
+  assert.ok(allCsv.includes('--- SUMMARY ---'));
+  assert.ok(allCsv.includes('Total Spent'));
 
   // 2. Filter by GCash Wallet
   const gcashFiltered = WalletEngine.filterTransactions(txns, { walletId: 'w-gcash' }, wallets);
@@ -64,7 +66,7 @@ test('Integration: full export lifecycle with filters and wallet calculations', 
 
   const gcashCsv = ExportEngine.generateTransactionsCsv(gcashFiltered, wallets, 'PHP');
   const gcashLines = gcashCsv.slice(1).trim().split('\n');
-  assert.equal(gcashLines.length, 3); // 1 header + 2 rows
+  assert.equal(gcashLines.length, 8); // 1 header + 2 rows + blank + 4 summary rows
   assert.ok(gcashLines[1].includes('GCash Starbucks'));
   assert.ok(gcashLines[2].includes('Transfer from GoTyme to GCash'));
 

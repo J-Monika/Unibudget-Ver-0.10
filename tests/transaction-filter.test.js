@@ -134,3 +134,26 @@ test('filterTransactions filters by custom date range', () => {
   const ids = res.map(t => t.id).sort();
   assert.deepEqual(ids, ['t1', 't2', 't4']);
 });
+
+test('filterTransactions excludes balance adjustments by default, includes when explicitly requested', () => {
+  const txnsWithAdj = [
+    ...sampleTxns,
+    { id: 't-adj', type: 'adjustment', direction: 'increase', amount: 500, walletId: 'w-cash', ts: now, deleted: false }
+  ];
+
+  // Default 'all' type: excludes adjustment
+  const resDefault = filterTransactions(txnsWithAdj, { type: 'all' }, sampleWallets);
+  assert.equal(resDefault.some(t => t.id === 't-adj'), false);
+  assert.equal(resDefault.length, 5);
+
+  // Explicit 'adjustment' type: includes adjustment
+  const resAdjOnly = filterTransactions(txnsWithAdj, { type: 'adjustment' }, sampleWallets);
+  assert.equal(resAdjOnly.length, 1);
+  assert.equal(resAdjOnly[0].id, 't-adj');
+
+  // Explicit includeAdjustments flag: includes adjustment
+  const resInclude = filterTransactions(txnsWithAdj, { type: 'all', includeAdjustments: true }, sampleWallets);
+  assert.equal(resInclude.length, 6);
+  assert.equal(resInclude.some(t => t.id === 't-adj'), true);
+});
+

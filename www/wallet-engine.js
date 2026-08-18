@@ -206,6 +206,10 @@
     return txns.filter(function(t) {
       if (!t || t.deleted) return false;
 
+      // 0. Exclude internal Balance Adjustments by default
+      var allowAdjustments = options.includeAdjustments === true || type === "adjustment";
+      if (t.type === "adjustment" && !allowAdjustments) return false;
+
       // 1. Wallet Filter
       if (walletId) {
         var matchW = t.walletId === walletId || (t.type === "transfer" && t.toWalletId === walletId);

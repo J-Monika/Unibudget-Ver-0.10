@@ -235,42 +235,68 @@
   .color-dot-btn.selected { border-color: #fff; box-shadow: 0 0 0 2px var(--accent); }
 
   /* ---------- Semi-Circular Rainbow Gauge Arch ---------- */
+  /* ---------- Semi-Circular Rainbow Gauge Arch ---------- */
   .chart-card {
-    padding: 20px 16px 14px;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 6px 0 10px;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    position: relative; overflow: hidden;
+    position: relative; overflow: visible;
   }
   .arch-wrap {
-    width: 100%; max-width: 320px; aspect-ratio: 300 / 175;
+    width: 100%; max-width: 440px; aspect-ratio: 340 / 185;
     position: relative; display: flex; align-items: center; justify-content: center;
   }
   .arch-svg {
     width: 100%; height: 100%; overflow: visible;
   }
   .arch-track {
-    fill: rgba(255, 255, 255, 0.05);
-    stroke: var(--line);
-    stroke-width: 1px;
+    fill: rgba(255, 255, 255, 0.04);
+    stroke: rgba(255, 255, 255, 0.08);
+    stroke-width: 1.5px;
     stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+  @keyframes archRise {
+    0% {
+      opacity: 0;
+      transform: scale(0.88) rotate(-14deg);
+    }
+    65% {
+      transform: scale(1.025) rotate(1.5deg);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) rotate(0deg);
+    }
+  }
+  @keyframes archIconPop {
+    0% { opacity: 0; transform: scale(0); }
+    70% { transform: scale(1.25); }
+    100% { opacity: 1; transform: scale(1); }
   }
   .arch-segment {
     cursor: pointer;
-    transition: transform .18s ease, filter .18s ease, opacity .18s ease;
-    transform-origin: 150px 150px;
+    transform-origin: 170px 175px;
+    animation: archRise 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    transition: transform .18s ease, filter .18s ease, stroke-width .18s ease;
   }
   .arch-segment:hover {
-    filter: brightness(1.18) drop-shadow(0 4px 12px rgba(0,0,0,.4));
-    transform: scale(1.025);
+    filter: brightness(1.2) drop-shadow(0 6px 14px rgba(0,0,0,.5));
+    transform: scale(1.03);
   }
   .arch-segment.active {
-    filter: brightness(1.25) drop-shadow(0 0 10px rgba(255,255,255,.4));
+    filter: brightness(1.3) drop-shadow(0 0 14px rgba(255,255,255,.55));
     stroke: #ffffff !important;
-    stroke-width: 3.5px !important;
+    stroke-width: 4px !important;
   }
   .arch-icon {
     pointer-events: none;
     user-select: none;
-    font-size: 14px;
+    font-size: 16px;
+    animation: archIconPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    transform-origin: center;
   }
   .arch-center-group {
     cursor: pointer;
@@ -278,15 +304,15 @@
   }
   .arch-center-label {
     fill: var(--muted);
-    font-size: 12.5px;
+    font-size: 13px;
     font-weight: 700;
-    letter-spacing: .02em;
+    letter-spacing: .03em;
     font-family: inherit;
     transition: fill .2s;
   }
   .arch-center-amt {
     fill: #ffffff;
-    font-size: 23px;
+    font-size: 26px;
     font-weight: 800;
     font-family: inherit;
     font-variant-numeric: tabular-nums;
@@ -297,7 +323,7 @@
   }
   .arch-center-sub {
     fill: var(--muted);
-    font-size: 11.5px;
+    font-size: 12px;
     font-weight: 600;
     font-family: inherit;
     font-variant-numeric: tabular-nums;
@@ -408,8 +434,32 @@
   .filter-reset-btn:hover { color: #fff; }
 
   /* ---------- Transactions ---------- */
-  .txns-card { padding-bottom: 8px; }
-  .txns { padding: 6px 16px 16px; display: flex; flex-direction: column; gap: 8px; width: 100%; box-sizing: border-box; }
+  .txns-card { padding-bottom: 12px; }
+  .txns-wrap { position: relative; width: 100%; box-sizing: border-box; }
+  .txns-wrap.txns-scrollable {
+    max-height: 440px; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  .txns-wrap.txns-scrollable::-webkit-scrollbar { width: 5px; }
+  .txns-wrap.txns-scrollable::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+  .txns { padding: 6px 16px 8px; display: flex; flex-direction: column; gap: 8px; width: 100%; box-sizing: border-box; }
+  .txns-fade {
+    display: none; position: absolute; bottom: 0; left: 0; right: 0; height: 52px;
+    background: linear-gradient(to bottom, rgba(27,30,44,0) 0%, rgba(27,30,44,0.92) 80%, rgba(27,30,44,1) 100%);
+    pointer-events: none; border-bottom-left-radius: 14px; border-bottom-right-radius: 14px;
+  }
+  .txns-fade.show { display: block; }
+  .txns-footer {
+    display: none; align-items: center; justify-content: center; padding: 4px 16px 6px;
+  }
+  .txns-footer.show { display: flex; }
+  .txns-expand-btn {
+    border: 1px solid var(--line); background: var(--page); color: var(--ink-soft);
+    font-size: 12.5px; font-weight: 700; padding: 7px 18px; border-radius: 20px;
+    cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-family: inherit;
+    transition: all .15s;
+  }
+  .txns-expand-btn:hover { background: var(--card-elevated); color: var(--ink); border-color: var(--accent); }
   .txn {
     display: flex; align-items: center; gap: 12px;
     padding: 12px 14px; border-radius: 14px; background: var(--card-elevated);
@@ -544,6 +594,85 @@
     box-sizing: border-box;
   }
   .ghost:hover { background: var(--card-elevated); }
+
+  /* ---------- Spreadsheet Preview Modal ---------- */
+  .modal-sheet {
+    max-width: 680px; width: calc(100vw - 24px); max-height: 88vh;
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .preview-body {
+    padding: 12px 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; flex: 1;
+    box-sizing: border-box;
+  }
+  .preview-kpis {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  }
+  @media (max-width: 480px) {
+    .preview-kpis { grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+  }
+  .preview-kpi {
+    background: var(--page); border: 1px solid var(--line); border-radius: 12px;
+    padding: 8px 10px; display: flex; flex-direction: column; gap: 2px;
+  }
+  .preview-kpi .lbl {
+    font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .03em;
+  }
+  .preview-kpi .val {
+    font-size: 14.5px; font-weight: 800; font-family: inherit; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .preview-kpi .val.inc { color: var(--income); }
+  .preview-kpi .val.exp { color: var(--spent); }
+  .preview-kpi .val.bal { color: var(--accent); }
+  
+  .sheet-table-wrap {
+    border: 1px solid var(--line); border-radius: 12px; overflow: auto; background: var(--page);
+    max-height: 320px; box-sizing: border-box; -webkit-overflow-scrolling: touch;
+  }
+  .sheet-table {
+    width: 100%; border-collapse: collapse; font-size: 12px; white-space: nowrap; font-family: inherit;
+  }
+  .sheet-table th {
+    background: var(--card-elevated); color: var(--ink-soft); font-weight: 700; padding: 8px 10px;
+    text-align: left; border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 2;
+  }
+  .sheet-table td {
+    padding: 7px 10px; border-bottom: 1px solid rgba(255,255,255,.05); color: var(--ink);
+  }
+  .sheet-table tr:nth-child(even) td {
+    background: rgba(255,255,255,.015);
+  }
+  .sheet-table tr.summary-sec-hdr td {
+    background: rgba(99, 102, 241, 0.12); color: var(--accent); font-weight: 800; font-size: 11px;
+    letter-spacing: .04em; text-transform: uppercase; padding: 6px 10px; border-top: 1px solid var(--line);
+  }
+  .sheet-table tr.summary-data-row td {
+    background: var(--card-elevated); font-weight: 700;
+  }
+  .sheet-table .num-cell {
+    text-align: right; font-variant-numeric: tabular-nums; font-weight: 700;
+  }
+  .sheet-table .tag {
+    padding: 2px 7px; border-radius: 6px; font-size: 10.5px; font-weight: 700; display: inline-block;
+  }
+  .modal-actions {
+    padding: 12px 20px 18px; display: flex; gap: 8px; flex-wrap: wrap; background: var(--card);
+    border-top: 1px solid var(--line); box-sizing: border-box;
+  }
+  .btn-copy-csv {
+    flex: 1; min-width: 110px; background: var(--page); border: 1.5px solid var(--line);
+    color: var(--ink-soft); font-weight: 700; font-size: 13.5px; padding: 11px; border-radius: 12px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-family: inherit;
+    transition: all .15s;
+  }
+  .btn-copy-csv:hover { background: var(--card-elevated); color: var(--ink); }
+  .btn-export-csv {
+    flex: 1.5; min-width: 150px; background: linear-gradient(135deg, #05a85c, #047857); border: 0;
+    color: #fff; font-weight: 800; font-size: 14px; padding: 11px; border-radius: 12px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-family: inherit;
+    transition: opacity .15s, transform .1s;
+  }
+  .btn-export-csv:hover { opacity: .95; }
+  .btn-export-csv:active { transform: scale(.98); }
 
   /* ---------- Safe to Spend Hero & Gamification ---------- */
   .fc.hero-card {
@@ -892,7 +1021,7 @@
       </div>
     </section>
 
-    <!-- MULTI-WALLET CAROUSEL -->
+    <!-- 2. MULTI-WALLET CAROUSEL -->
     <section class="wallets-section" id="walletsSection">
       <div class="wallets-carousel" id="walletCarousel"></div>
       <div class="wallet-quick-actions">
@@ -901,29 +1030,20 @@
       </div>
     </section>
 
-    <!-- 2. RAINBOW GAUGE ARCH CARD -->
-    <section class="card chart-card" id="donutCard">
-      <div class="arch-wrap">
-        <svg id="donutSvg" viewBox="0 0 300 175" class="arch-svg"></svg>
-      </div>
-    </section>
-
-    <!-- 3. CATEGORIES BREAKDOWN CARD -->
-    <section class="card cats-card">
-      <div class="sec-head">
-        <h2>Categories Breakdown</h2>
-        <span class="side link" id="editGoals">Limits 🎯</span>
-      </div>
-      <div class="cats-list" id="cats"></div>
-    </section>
-
-    <!-- 4. SAFE TO SPEND / FORECASTER (HERO WIDGET) -->
+    <!-- 3. SAFE TO SPEND / FORECASTER (HERO WIDGET) -->
     <section class="card fc hero-card" id="forecastCard">
       <div class="sec-head">
         <h2>💸 Safe to Spend</h2>
         <span class="side link" id="editAllowance">Set baon</span>
       </div>
       <div class="fc-body" id="fcBody"></div>
+    </section>
+
+    <!-- 4. RAINBOW GAUGE ARCH CARD -->
+    <section class="card chart-card" id="donutCard">
+      <div class="arch-wrap">
+        <svg id="donutSvg" viewBox="0 0 340 180" class="arch-svg"></svg>
+      </div>
     </section>
 
     <!-- 5. RECENT TRANSACTIONS CARD -->
@@ -977,7 +1097,25 @@
         </div>
       </div>
 
-      <div class="txns" id="txns"></div>
+      <!-- Scrollable / Collapsible Transactions Wrapper -->
+      <div class="txns-wrap" id="txnsWrap">
+        <div class="txns" id="txns"></div>
+        <div class="txns-fade" id="txnsFade"></div>
+      </div>
+
+      <!-- Expand / Show More Footer -->
+      <div class="txns-footer" id="txnsFooter">
+        <button type="button" class="txns-expand-btn" id="btnToggleTxnsExpand">Show more ▾</button>
+      </div>
+    </section>
+
+    <!-- 6. CATEGORIES BREAKDOWN CARD -->
+    <section class="card cats-card">
+      <div class="sec-head">
+        <h2>Categories Breakdown</h2>
+        <span class="side link" id="editGoals">Limits 🎯</span>
+      </div>
+      <div class="cats-list" id="cats"></div>
     </section>
   </div>
 </main>
@@ -1149,6 +1287,58 @@
       </div>
       <button type="submit" class="submit" id="btnSaveWallet">Save Account</button>
     </form>
+  </div>
+</div>
+
+<!-- ============ SPREADSHEET PREVIEW & EXPORT MODAL ============ -->
+<div class="scrim" id="csvPreviewScrim">
+  <div class="modal modal-sheet" role="dialog" aria-modal="true" aria-labelledby="previewTitle">
+    <div class="modal-head">
+      <div>
+        <h3 id="previewTitle">📊 Spreadsheet Preview</h3>
+        <p id="previewSubtitle">unibudget-transactions.csv</p>
+      </div>
+      <button class="x" id="closeCsvPreview" aria-label="Close">✕</button>
+    </div>
+    <div class="preview-body">
+      <!-- KPI Metric Cards -->
+      <div class="preview-kpis">
+        <div class="preview-kpi">
+          <div class="lbl">Total Income</div>
+          <div class="val inc" id="previewKpiIncome">+₱0.00</div>
+        </div>
+        <div class="preview-kpi">
+          <div class="lbl">Total Spent</div>
+          <div class="val exp" id="previewKpiSpent">-₱0.00</div>
+        </div>
+        <div class="preview-kpi">
+          <div class="lbl" id="previewKpiBalLabel">Net Cash Flow</div>
+          <div class="val bal" id="previewKpiNet">₱0.00</div>
+        </div>
+      </div>
+
+      <!-- Scrollable Table -->
+      <div class="sheet-table-wrap">
+        <table class="sheet-table" id="previewSheetTable">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Description</th>
+              <th>Type</th>
+              <th>Category</th>
+              <th>Account</th>
+              <th style="text-align:right">Amount</th>
+            </tr>
+          </thead>
+          <tbody id="previewSheetBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-copy-csv" id="btnCopyCsv">📋 Copy CSV</button>
+      <button class="btn-export-csv" id="btnExportCsv">📥 Export / Share CSV</button>
+    </div>
   </div>
 </div>
 
@@ -1505,6 +1695,7 @@
 
   // ---------- Semi-Circular Rainbow Gauge Arch Utilities ----------
   var selectedArchCat = null;
+  var isTxnsExpanded = false;
 
   function describeArchSector(cx, cy, R, r, startAngle, endAngle) {
     var a0 = startAngle * Math.PI / 180;
@@ -1533,7 +1724,7 @@
     if (!svg) return;
     svg.innerHTML = "";
 
-    var cx = 150, cy = 150, R = 125, r = 78;
+    var cx = 170, cy = 175, R = 158, r = 104;
 
     // 1. Background full semi-circular track (180° to 360°)
     var bgTrack = document.createElementNS("http://www.w3.org/2000/svg", "path");
@@ -1581,11 +1772,12 @@
         path.setAttribute("d", describeArchSector(cx, cy, R, r, aStart, aEnd));
         path.setAttribute("fill", color);
         path.setAttribute("stroke", color);
-        path.setAttribute("stroke-width", "1.5");
+        path.setAttribute("stroke-width", "3.5");
         path.setAttribute("stroke-linejoin", "round");
         path.setAttribute("stroke-linecap", "round");
         path.setAttribute("class", "arch-segment" + (isSelected ? " active" : ""));
         path.setAttribute("data-cat", catName);
+        path.style.animationDelay = (idx * 65) + "ms";
 
         // Click handler to inspect category
         path.addEventListener("click", function(e){
@@ -1609,6 +1801,7 @@
           iconText.setAttribute("text-anchor", "middle");
           iconText.setAttribute("dominant-baseline", "central");
           iconText.setAttribute("class", "arch-icon");
+          iconText.style.animationDelay = (idx * 65 + 100) + "ms";
           iconText.textContent = catIcon(catName, "expense");
           svg.appendChild(iconText);
         }
@@ -1626,20 +1819,20 @@
     });
 
     var labelTxt = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    labelTxt.setAttribute("x", "150");
-    labelTxt.setAttribute("y", "94");
+    labelTxt.setAttribute("x", "170");
+    labelTxt.setAttribute("y", "106");
     labelTxt.setAttribute("text-anchor", "middle");
     labelTxt.setAttribute("class", "arch-center-label");
 
     var amtTxt = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    amtTxt.setAttribute("x", "150");
-    amtTxt.setAttribute("y", "124");
+    amtTxt.setAttribute("x", "170");
+    amtTxt.setAttribute("y", "138");
     amtTxt.setAttribute("text-anchor", "middle");
     amtTxt.setAttribute("class", "arch-center-amt" + (isOver ? " over" : ""));
 
     var subTxt = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    subTxt.setAttribute("x", "150");
-    subTxt.setAttribute("y", "145");
+    subTxt.setAttribute("x", "170");
+    subTxt.setAttribute("y", "160");
     subTxt.setAttribute("text-anchor", "middle");
     subTxt.setAttribute("class", "arch-center-sub" + (isOver ? " over" : ""));
 
@@ -1749,8 +1942,9 @@
         walletId: selectedWalletFilter
       }, state.wallets);
     }
-    if (!selectedWalletFilter) return all;
+    if (!selectedWalletFilter) return all.filter(function(t){ return t.type !== "adjustment"; });
     return all.filter(function(t){
+      if (t.type === "adjustment") return false;
       return t.walletId === selectedWalletFilter || (t.type === "transfer" && t.toWalletId === selectedWalletFilter);
     });
   }
@@ -1863,11 +2057,22 @@
 
     // Recent Transactions
     var tx = el("#txns"); tx.innerHTML = "";
+    var txWrap = el("#txnsWrap");
+    var txFade = el("#txnsFade");
+    var txFooter = el("#txnsFooter");
+    var txExpBtn = el("#btnToggleTxnsExpand");
+
     if (!txList.length){
       tx.innerHTML = '<div class="empty"><div class="big">🧾</div>No transactions ' + (selectedWalletFilter ? 'for this account.' : 'yet.') + '<br>Tap <b>+</b> to add a record.</div>';
+      if (txFade) txFade.classList.remove("show");
+      if (txFooter) txFooter.classList.remove("show");
+      if (txWrap) txWrap.classList.remove("txns-scrollable");
     } else {
       var sorted = txList.slice().sort(function(a,b){ return b.ts - a.ts; });
-      sorted.forEach(function(t){
+      var totalCount = sorted.length;
+      var displayList = isTxnsExpanded ? sorted.slice(0, 10) : sorted.slice(0, 3);
+
+      displayList.forEach(function(t){
         var isInc = t.type === "income";
         var isTrf = t.type === "transfer";
         var isAdj = t.type === "adjustment";
@@ -1923,11 +2128,29 @@
         row.querySelector(".del").addEventListener("click", function(){ removeTxn(t.id); });
         tx.appendChild(row);
       });
+
+      if (totalCount > 3) {
+        if (txFooter) {
+          txFooter.classList.add("show");
+          if (txExpBtn) {
+            txExpBtn.textContent = isTxnsExpanded ? "Show less ▴" : "Show more ▾";
+          }
+        }
+        if (txFade) {
+          txFade.classList.toggle("show", !isTxnsExpanded);
+        }
+        if (txWrap) {
+          txWrap.classList.toggle("txns-scrollable", isTxnsExpanded);
+        }
+      } else {
+        if (txFooter) txFooter.classList.remove("show");
+        if (txFade) txFade.classList.remove("show");
+        if (txWrap) txWrap.classList.remove("txns-scrollable");
+      }
     }
 
     el("#amtSym").textContent = sym();
     renderForecast();
-    renderGameChips();
   }
 
   function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]; }); }
@@ -2860,7 +3083,7 @@
       if (selectedArchCat) { selectedArchCat = null; render(); }
       closeGoals(); closeAllowance(); closeAchievements(); closeAddModal();
       closeAddUtang(); closePayUtang(); closePaidUtangs();
-      closeTransfer(); closeReconcile(); closeWalletModal();
+      closeTransfer(); closeReconcile(); closeWalletModal(); closeCsvPreview();
     }
   });
   el("#clearAll").addEventListener("click", clearAll);
@@ -2868,7 +3091,15 @@
   el("#syncBtn").addEventListener("click", syncFn);
   el("#syncNow").addEventListener("click", syncFn);
 
-  function exportCurrentTransactions(){
+  // ---------- Spreadsheet Preview & Export Flow ----------
+  var currentCsvExportData = null;
+
+  function closeCsvPreview(){
+    var s = el("#csvPreviewScrim");
+    if (s) s.classList.remove("show");
+  }
+
+  function openSpreadsheetPreview(){
     if (!state || !window.ExportEngine) {
       toast("Export engine not ready");
       return;
@@ -2886,23 +3117,176 @@
       walletName: activeWalletObj ? activeWalletObj.name : null
     });
 
-    var csvContent = ExportEngine.generateTransactionsCsv(list, state.wallets, state.currency);
-    ExportEngine.triggerCsvDownload(csvContent, filename).then(function(res){
+    var balances = window.WalletEngine ? WalletEngine.computeWalletBalances(state.wallets, state.txns) : {};
+    var totalNet = window.WalletEngine ? WalletEngine.computeTotalNetWorth(state.wallets, state.txns) : 0;
+
+    var summaryOptions = {
+      walletId: selectedWalletFilter,
+      walletBalances: balances,
+      totalNetWorth: totalNet
+    };
+
+    var csvContent = ExportEngine.generateTransactionsCsv(list, state.wallets, state.currency, summaryOptions);
+    var metrics = ExportEngine.computeSummaryMetrics(list, state.wallets, summaryOptions);
+
+    currentCsvExportData = {
+      list: list,
+      filename: filename,
+      csvContent: csvContent,
+      metrics: metrics
+    };
+
+    // Update Header
+    el("#previewTitle").textContent = "📊 Spreadsheet Preview (" + list.length + " record" + (list.length === 1 ? "" : "s") + ")";
+    el("#previewSubtitle").textContent = filename;
+
+    // Update KPI cards
+    el("#previewKpiIncome").textContent = "+" + fmt(metrics.totalIncome).replace("−","");
+    el("#previewKpiSpent").textContent = "-" + fmt(metrics.totalSpent).replace("−","");
+    if (metrics.accountName && metrics.accountBalance !== null) {
+      el("#previewKpiBalLabel").textContent = esc(metrics.accountName) + " Balance";
+      el("#previewKpiNet").textContent = fmt(metrics.accountBalance);
+      el("#previewKpiNet").className = "val bal " + (metrics.accountBalance < 0 ? "exp" : "bal");
+    } else {
+      el("#previewKpiBalLabel").textContent = "Net Cash Flow";
+      el("#previewKpiNet").textContent = (metrics.netBalance >= 0 ? "+" : "-") + fmt(Math.abs(metrics.netBalance)).replace("−","");
+      el("#previewKpiNet").className = "val bal " + (metrics.netBalance < 0 ? "exp" : (metrics.netBalance > 0 ? "inc" : "bal"));
+    }
+
+    // Populate Table
+    var tbody = el("#previewSheetBody");
+    tbody.innerHTML = "";
+
+    var sorted = list.slice().sort(function(a,b){ return b.ts - a.ts; });
+    sorted.forEach(function(t){
+      var isInc = t.type === "income";
+      var isTrf = t.type === "transfer";
+      var wSrc = getWalletById(t.walletId);
+      var wDst = t.toWalletId ? getWalletById(t.toWalletId) : null;
+      var wText = isTrf ? (wSrc.name + " → " + wDst.name) : wSrc.name;
+      var typeTag = isTrf ? '<span class="tag" style="background:#6366f126;color:#818cf8">Transfer</span>'
+        : (isInc ? '<span class="tag" style="background:#10b98126;color:#34d399">Income</span>' : '<span class="tag" style="background:#ef444426;color:#f87171">Expense</span>');
+      var amtClass = isTrf ? "" : (isInc ? "inc" : "exp");
+      var amtPrefix = isTrf ? "-" : (isInc ? "+" : "-");
+
+      var tr = document.createElement("tr");
+      tr.innerHTML =
+        '<td>' + ExportEngine.formatDate(t.ts) + '</td>' +
+        '<td style="color:var(--muted)">' + ExportEngine.formatTime(t.ts) + '</td>' +
+        '<td style="font-weight:700">' + esc(t.desc || "") + '</td>' +
+        '<td>' + typeTag + '</td>' +
+        '<td style="color:var(--muted)">' + esc(t.cat || (isTrf ? "Transfer" : "Other")) + '</td>' +
+        '<td>' + esc(wText) + '</td>' +
+        '<td class="num-cell ' + amtClass + '">' + amtPrefix + fmt(t.amount).replace("−","") + '</td>';
+      tbody.appendChild(tr);
+    });
+
+    // Summary Header Row in Table
+    var trHdr = document.createElement("tr");
+    trHdr.className = "summary-sec-hdr";
+    trHdr.innerHTML = '<td colspan="6">📈 SUMMARY TOTALS</td><td class="num-cell">AMOUNT</td>';
+    tbody.appendChild(trHdr);
+
+    // Summary Rows in Table
+    var trInc = document.createElement("tr");
+    trInc.className = "summary-data-row";
+    trInc.innerHTML = '<td colspan="6" style="color:var(--income)">Total Income</td><td class="num-cell inc">+' + fmt(metrics.totalIncome).replace("−","") + '</td>';
+    tbody.appendChild(trInc);
+
+    var trExp = document.createElement("tr");
+    trExp.className = "summary-data-row";
+    trExp.innerHTML = '<td colspan="6" style="color:var(--spent)">Total Spent</td><td class="num-cell exp">-' + fmt(metrics.totalSpent).replace("−","") + '</td>';
+    tbody.appendChild(trExp);
+
+    var trNet = document.createElement("tr");
+    trNet.className = "summary-data-row";
+    trNet.innerHTML = '<td colspan="6" style="color:var(--accent)">Net Cash Flow (Income − Spent)</td><td class="num-cell ' + (metrics.netBalance < 0 ? 'exp' : 'inc') + '">' + (metrics.netBalance >= 0 ? "+" : "-") + fmt(Math.abs(metrics.netBalance)).replace("−","") + '</td>';
+    tbody.appendChild(trNet);
+
+    if (metrics.accountName && metrics.accountBalance !== null) {
+      var trAcc = document.createElement("tr");
+      trAcc.className = "summary-data-row";
+      trAcc.innerHTML = '<td colspan="6">Account Balance (' + esc(metrics.accountName) + ')</td><td class="num-cell">' + fmt(metrics.accountBalance) + '</td>';
+      tbody.appendChild(trAcc);
+    } else if (metrics.totalNetWorth !== null) {
+      var trTot = document.createElement("tr");
+      trTot.className = "summary-data-row";
+      trTot.innerHTML = '<td colspan="6">Total Net Worth</td><td class="num-cell">' + fmt(metrics.totalNetWorth) + '</td>';
+      tbody.appendChild(trTot);
+    }
+
+    el("#csvPreviewScrim").classList.add("show");
+  }
+
+  function executeExportFromPreview(){
+    if (!currentCsvExportData) return;
+    var data = currentCsvExportData;
+    ExportEngine.triggerCsvDownload(data.csvContent, data.filename).then(function(res){
       if (res && res.success) {
-        toast("📥 Exported " + list.length + " record" + (list.length === 1 ? "" : "s") + " to " + filename);
+        if (res.method === "native") {
+          toast("📥 Saved to Downloads (" + (res.filePath || data.filename) + ")");
+        } else {
+          toast("📥 Exported " + data.list.length + " record" + (data.list.length === 1 ? "" : "s") + " to " + data.filename);
+        }
+        closeCsvPreview();
       } else {
         toast("Export failed. Please try again.");
       }
     });
   }
 
+  function copyCsvToClipboard(){
+    if (!currentCsvExportData) return;
+    var content = currentCsvExportData.csvContent;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(content).then(function(){
+        toast("📋 Copied CSV to clipboard!");
+      }).catch(function(){
+        fallbackCopy(content);
+      });
+    } else {
+      fallbackCopy(content);
+    }
+  }
+
+  function fallbackCopy(text){
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand("copy");
+      toast("📋 Copied CSV to clipboard!");
+    } catch(e) {
+      toast("Failed to copy CSV");
+    }
+    document.body.removeChild(ta);
+  }
+
   var expBtn = el("#exportTxns");
-  if (expBtn) expBtn.addEventListener("click", exportCurrentTransactions);
+  if (expBtn) expBtn.addEventListener("click", openSpreadsheetPreview);
   var menuExpBtn = el("#menuExport");
   if (menuExpBtn) menuExpBtn.addEventListener("click", function(){
     el("#menuPop").classList.remove("show");
-    exportCurrentTransactions();
+    openSpreadsheetPreview();
   });
+  var closePrevBtn = el("#closeCsvPreview");
+  if (closePrevBtn) closePrevBtn.addEventListener("click", closeCsvPreview);
+  var btnExpModal = el("#btnExportCsv");
+  if (btnExpModal) btnExpModal.addEventListener("click", executeExportFromPreview);
+  var btnCopyModal = el("#btnCopyCsv");
+  if (btnCopyModal) btnCopyModal.addEventListener("click", copyCsvToClipboard);
+  el("#csvPreviewScrim").addEventListener("click", function(e){ if (e.target === this) closeCsvPreview(); });
+
+  var btnExpTxns = el("#btnToggleTxnsExpand");
+  if (btnExpTxns) {
+    btnExpTxns.addEventListener("click", function(){
+      isTxnsExpanded = !isTxnsExpanded;
+      render();
+    });
+  }
 
   // Auto-wallet ingestion (GCash, Maya, etc.)
   function redactPII(s){
