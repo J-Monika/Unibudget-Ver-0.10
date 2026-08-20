@@ -121,8 +121,12 @@ test('filterTransactions filters by transaction type', () => {
 });
 
 test('filterTransactions filters by custom date range', () => {
-  const from = new Date(now - 5 * oneDay).toISOString().split('T')[0];
-  const to = new Date(now).toISOString().split('T')[0];
+  const toLocalYMD = (ts) => {
+    const d = new Date(ts);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
+  const from = toLocalYMD(now - 5 * oneDay);
+  const to = toLocalYMD(now);
 
   const res = filterTransactions(sampleTxns, {
     dateRange: 'custom',

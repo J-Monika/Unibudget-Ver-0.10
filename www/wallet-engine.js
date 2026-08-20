@@ -188,9 +188,20 @@
     if (!Array.isArray(txns)) return [];
     options = options || {};
     var query = (options.query || "").trim().toLowerCase();
+    function parseBoundary(dateStr, isEnd) {
+      if (!dateStr) return null;
+      if (typeof dateStr === "string" && /^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+        var parts = dateStr.split("-").map(Number);
+        return new Date(parts[0], parts[1] - 1, parts[2], isEnd ? 23 : 0, isEnd ? 59 : 0, isEnd ? 59 : 0, isEnd ? 999 : 0).getTime();
+      }
+      var d = new Date(dateStr);
+      if (isNaN(d.getTime())) return null;
+      d.setHours(isEnd ? 23 : 0, isEnd ? 59 : 0, isEnd ? 59 : 0, isEnd ? 999 : 0);
+      return d.getTime();
+    }
     var dateRange = options.dateRange || "all";
-    var customFrom = options.customFrom ? new Date(options.customFrom).setHours(0, 0, 0, 0) : null;
-    var customTo = options.customTo ? new Date(options.customTo).setHours(23, 59, 59, 999) : null;
+    var customFrom = parseBoundary(options.customFrom, false);
+    var customTo = parseBoundary(options.customTo, true);
     var type = options.type || "all";
     var walletId = options.walletId || null;
 

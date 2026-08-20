@@ -115,8 +115,71 @@
   .sync-dot {
     width: 8px; height: 8px; border-radius: 50%; background: #34d399;
     box-shadow: 0 0 0 3px rgba(52,211,153,.25);
+    transition: all .2s ease;
   }
-  .sync-dot.dirty { background: #fbbf24; box-shadow: 0 0 0 3px rgba(251,191,36,.25); }
+  .sync-dot.synced { background: #34d399; box-shadow: 0 0 0 3px rgba(52,211,153,.25); }
+  .sync-dot.offline { background: #fbbf24; box-shadow: 0 0 0 3px rgba(251,191,36,.25); }
+  .sync-dot.syncing {
+    background: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,.35);
+    animation: syncDotPulse .9s infinite alternate ease-in-out;
+  }
+  .sync-dot.guest { background: #94a3b8; box-shadow: 0 0 0 3px rgba(148,163,184,.25); }
+  @keyframes syncDotPulse {
+    0% { transform: scale(0.85); opacity: 0.6; }
+    100% { transform: scale(1.25); opacity: 1; }
+  }
+
+  /* Top-Right Floating Synced! Pill */
+  #syncPill {
+    position: fixed; top: max(14px, env(safe-area-inset-top, 14px)); right: 16px; z-index: 350;
+    background: linear-gradient(135deg, #059669, #10b981); color: #fff;
+    font-size: 12.5px; font-weight: 800; padding: 7px 14px; border-radius: 999px;
+    box-shadow: 0 8px 20px rgba(16,185,129,.4), 0 0 0 1px rgba(255,255,255,.2);
+    display: inline-flex; align-items: center; gap: 6px;
+    opacity: 0; transform: translateY(-10px) scale(0.92); pointer-events: none;
+    transition: opacity .25s cubic-bezier(0.2, 0.9, 0.3, 1.2), transform .25s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+  }
+  #syncPill.show {
+    opacity: 1; transform: translateY(0) scale(1); pointer-events: auto;
+  }
+  #syncPill .dot {
+    width: 7px; height: 7px; border-radius: 50%; background: #fff; box-shadow: 0 0 6px #fff;
+  }
+
+  /* Guest Reconnect Banner */
+  .guest-sync-banner {
+    background: linear-gradient(135deg, rgba(99,102,241,.18), rgba(168,85,247,.18));
+    border: 1px solid rgba(168,85,247,.35); border-radius: 16px; padding: 14px 16px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    box-sizing: border-box; width: 100%; margin-bottom: 2px;
+  }
+  .guest-sync-banner .txt { font-size: 13px; font-weight: 600; color: #e0e7ff; line-height: 1.35; }
+  .guest-sync-banner .txt b { color: #fff; font-weight: 800; }
+  .guest-sync-banner .actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .guest-sync-banner .btn-link {
+    background: var(--accent); color: #fff; border: 0; font-size: 12px; font-weight: 800;
+    padding: 6px 12px; border-radius: 8px; cursor: pointer; white-space: nowrap;
+  }
+  .guest-sync-banner .btn-dismiss {
+    background: transparent; color: var(--muted); border: 0; font-size: 16px; cursor: pointer; padding: 4px; line-height: 1;
+  }
+
+  /* Warning Modal Card */
+  .warn-card {
+    border-top: 4px solid #f59e0b !important;
+  }
+  .warn-icon {
+    font-size: 40px; text-align: center; margin-bottom: 10px;
+  }
+  .warn-box {
+    background: rgba(245,158,11,.12); border: 1px solid rgba(245,158,11,.3);
+    border-radius: 12px; padding: 12px 14px; margin: 12px 0 18px; text-align: left;
+  }
+  .warn-box p {
+    margin: 0 0 6px; font-size: 12.5px; color: #fde68a; line-height: 1.4;
+  }
+  .warn-box p:last-child { margin-bottom: 0; }
+  .warn-box strong { color: #fff; }
 
   /* ---------- Layout ---------- */
   main {
@@ -748,25 +811,66 @@
   .menu-item:hover { background: var(--card-elevated); }
   .menu-item.danger { color: var(--spent); }
 
+  /* ---------- Swipe Viewport & Slider ---------- */
+  #tabViewport {
+    width: 100vw;
+    max-width: 100%;
+    overflow-x: hidden;
+    position: relative;
+    touch-action: pan-y pinch-zoom;
+  }
+  #tabSlider {
+    display: flex;
+    width: 400vw;
+    will-change: transform;
+    transition: transform .32s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  #tabSlider.is-dragging {
+    transition: none !important;
+  }
+  .tab-pane {
+    width: 100vw;
+    max-width: 100vw;
+    flex: 0 0 100vw;
+    min-width: 100vw;
+    box-sizing: border-box;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+  }
+
   /* ---------- Bottom Tab Bar ---------- */
   #tabbar {
     display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 130;
-    background: rgba(24, 27, 36, 0.94); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    background: rgba(24, 27, 36, 0.94); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
     border-top: 1px solid var(--line);
-    padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 0px));
-    box-shadow: 0 -6px 22px rgba(0,0,0,.35);
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
+    box-shadow: 0 -6px 24px rgba(0,0,0,.4);
     width: 100%; max-width: 100vw; box-sizing: border-box;
+    user-select: none;
   }
   #tabbar button {
     flex: 1; border: 0; background: transparent; cursor: pointer; font-family: inherit;
-    display: flex; flex-direction: column; align-items: center; gap: 2px;
-    font-size: 11px; font-weight: 700; color: var(--muted); padding: 6px 2px; border-radius: 10px;
-    transition: color .15s;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    font-size: 11px; font-weight: 700; color: var(--muted); padding: 7px 4px 6px; border-radius: 12px;
+    transition: color .2s cubic-bezier(0.34, 1.56, 0.64, 1), transform .15s ease, background .15s ease;
+    position: relative; z-index: 2;
   }
-  #tabbar button span { font-size: 20px; line-height: 1; }
-  #tabbar button:active { background: var(--card-elevated); }
-  #tabbar button.active { color: var(--accent); font-weight: 800; }
-  #tabbar button.danger { color: var(--spent); }
+  #tabbar button span { font-size: 20px; line-height: 1; display: inline-block; transition: transform .25s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  #tabbar button:active { transform: scale(.92); }
+  #tabbar button.active { color: #ffffff; font-weight: 800; }
+  #tabbar button.active span { transform: scale(1.22) translateY(-2px); }
+  #tabbar button.active::before {
+    content: ""; position: absolute; inset: 2px 6px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.28), rgba(79, 70, 229, 0.18));
+    border: 1px solid rgba(99, 102, 241, 0.4);
+    border-radius: 11px; z-index: -1;
+    animation: tabPillIn .22s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  @keyframes tabPillIn {
+    0% { transform: scale(0.85); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
 
   /* ---------- Utang Section ---------- */
   #utangSection {
@@ -797,6 +901,65 @@
     text-align: center; color: var(--muted); font-size: 13.5px; padding: 24px 16px;
     background: var(--card); border-radius: 14px; border: 1.5px dashed var(--line);
   }
+
+  /* ---------- Rewards Hub Section ---------- */
+  #rewardsSection {
+    max-width: 640px; margin: 0 auto; padding: 18px 16px 100px;
+    width: 100%; box-sizing: border-box;
+  }
+  .rewards-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 18px; flex-wrap: wrap; gap: 10px;
+  }
+  .rewards-header h2 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -.02em; color: #fff; }
+  .rewards-streak-chip {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(234, 88, 12, 0.2));
+    color: var(--gold-2); border: 1px solid rgba(245, 158, 11, 0.4);
+    padding: 6px 13px; border-radius: 999px; font-size: 12.5px; font-weight: 800;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .rewards-hero-card {
+    background: linear-gradient(145deg, #252a3d, #1a1e2b);
+    border: 1px solid var(--line); padding: 22px 20px; margin-bottom: 16px;
+    position: relative; overflow: hidden;
+  }
+  .rewards-hero-card::after {
+    content: ""; position: absolute; right: -20px; top: -20px; width: 120px; height: 120px;
+    background: radial-gradient(circle, rgba(99,102,241,0.2) 0%, transparent 70%); pointer-events: none;
+  }
+  .rewards-perks {
+    margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line);
+    font-size: 12.5px; color: var(--ink-soft); font-weight: 600; display: flex; align-items: center; gap: 6px;
+  }
+  .rewards-badges-card { padding-bottom: 18px; }
+
+  /* ---------- Add Hub Section ---------- */
+  #addSection {
+    max-width: 640px; margin: 0 auto; padding: 18px 16px 100px;
+    width: 100%; box-sizing: border-box;
+  }
+  .add-hub-header { margin-bottom: 18px; }
+  .add-hub-header h2 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -.02em; color: #fff; }
+  .add-hub-header p { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
+  .add-quick-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px;
+  }
+  @media (max-width: 480px) {
+    .add-quick-grid { grid-template-columns: 1fr; gap: 8px; }
+  }
+  .add-quick-card {
+    border: 1px solid var(--line); background: var(--card); border-radius: 16px;
+    padding: 14px 12px; cursor: pointer; text-align: left; font-family: inherit;
+    transition: transform .15s ease, border-color .15s ease, background .15s ease;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .add-quick-card:hover {
+    transform: translateY(-2px); border-color: var(--accent); background: var(--card-elevated);
+  }
+  .add-quick-card .ic { font-size: 22px; line-height: 1; margin-bottom: 4px; }
+  .add-quick-card .lbl { font-weight: 800; font-size: 13.5px; color: #fff; }
+  .add-quick-card .sub { font-size: 11px; color: var(--muted); font-weight: 500; }
+  .add-form-card { padding-bottom: 20px; }
   .utang-card {
     background: var(--card); border: 1px solid var(--line); border-radius: 16px;
     box-shadow: var(--shadow); padding: 16px 18px; margin-bottom: 12px;
@@ -900,6 +1063,24 @@
     padding: 6px 10px; border-radius: 8px;
   }
 
+  .auth-divider {
+    display: flex; align-items: center; text-align: center; margin: 16px 0;
+    color: var(--muted); font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
+  }
+  .auth-divider::before, .auth-divider::after {
+    content: ''; flex: 1; border-bottom: 1px solid var(--line);
+  }
+  .auth-divider span { padding: 0 10px; }
+  .btn-offline {
+    width: 100%; border: 1px solid var(--line); background: rgba(255,255,255,.05);
+    color: #fff; font-family: inherit; font-size: 13.5px; font-weight: 700;
+    padding: 11px 16px; border-radius: 12px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: all .15s ease; box-sizing: border-box;
+  }
+  .btn-offline:hover { background: rgba(255,255,255,.09); border-color: rgba(255,255,255,.2); }
+  .btn-offline:active { transform: translateY(1px); }
+
   /* Animations */
   @keyframes pop { 0%{transform:scale(.6);opacity:0} 60%{transform:scale(1.06)} 100%{transform:scale(1);opacity:1} }
   @keyframes floaty { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
@@ -933,6 +1114,7 @@
 <body>
 
 <div id="verBadge">v10</div>
+<div id="syncPill" aria-live="polite"><span class="dot"></span><span>Synced!</span></div>
 
 <!-- ============ AUTH SCREEN ============ -->
 <div id="auth">
@@ -965,6 +1147,10 @@
         </div>
       </div>
       <button type="submit" class="submit" id="authSubmit">Log in</button>
+      <div class="auth-divider"><span>or</span></div>
+      <button type="button" class="btn-offline" id="continueOfflineBtn">
+        <span>☁</span> Continue in Offline Mode
+      </button>
     </form>
 
     <div class="auth-note" id="authNote">
@@ -1002,6 +1188,7 @@
           <button class="menu-item" id="rewardsBtn">🏆 Rewards</button>
           <button class="menu-item" id="connectGcashBtn">🔗 Connect GCash</button>
           <button class="menu-item" id="menuExport">📥 Export to Spreadsheet (CSV)</button>
+          <button class="menu-item" id="menuLinkCloud" style="display:none">☁ Link Cloud Account</button>
           <button class="menu-item danger" id="menuLogout">↪ Log out</button>
         </div>
       </div>
@@ -1009,116 +1196,258 @@
   </div>
 </header>
 
-<main>
-  <div class="feed">
-    <!-- 1. TOTAL BALANCE CARD -->
-    <section class="card balance-card">
-      <div class="bal-eyebrow" id="balEyebrow"><span>Total Balance:</span></div>
-      <div class="bal-big num" id="balance">₱0.00</div>
-      <div class="bal-subrow">
-        <span class="in"><span class="lab">Income:</span><b class="num" id="income">+₱0.00</b></span>
-        <span class="sp"><span class="lab">Spent:</span><b class="num" id="spent">-₱0.00</b></span>
-      </div>
-    </section>
-
-    <!-- 2. MULTI-WALLET CAROUSEL -->
-    <section class="wallets-section" id="walletsSection">
-      <div class="wallets-carousel" id="walletCarousel"></div>
-      <div class="wallet-quick-actions">
-        <button type="button" class="w-action-btn" id="btnQuickTransfer"><span>🔄</span> Transfer</button>
-        <button type="button" class="w-action-btn" id="btnQuickReconcile"><span>⚖️</span> Reconcile</button>
-      </div>
-    </section>
-
-    <!-- 3. SAFE TO SPEND / FORECASTER (HERO WIDGET) -->
-    <section class="card fc hero-card" id="forecastCard">
-      <div class="sec-head">
-        <h2>💸 Safe to Spend</h2>
-        <span class="side link" id="editAllowance">Set baon</span>
-      </div>
-      <div class="fc-body" id="fcBody"></div>
-    </section>
-
-    <!-- 4. RAINBOW GAUGE ARCH CARD -->
-    <section class="card chart-card" id="donutCard">
-      <div class="arch-wrap">
-        <svg id="donutSvg" viewBox="0 0 340 180" class="arch-svg"></svg>
-      </div>
-    </section>
-
-    <!-- 5. RECENT TRANSACTIONS CARD -->
-    <section class="card txns-card">
-      <div class="sec-head">
-        <h2>Recent Transactions</h2>
-        <span class="side"><span class="link" id="exportTxns" title="Export transactions to CSV">📥 Export</span> &nbsp; <span class="link" id="syncNow">🔄 Sync</span> &nbsp; <span class="link" id="clearAll" style="color:var(--spent)">Clear All</span></span>
-      </div>
-
-      <!-- Search & Filter Controls -->
-      <div class="txn-controls">
-        <div class="txn-search-wrap">
-          <span class="txn-search-icon">🔍</span>
-          <input type="text" id="txnSearchInput" class="txn-search-input" placeholder="Search store, person, note, ref, amount..." autocomplete="off" />
-          <button type="button" id="txnSearchClear" class="txn-search-clear" aria-label="Clear search">✕</button>
-        </div>
-
-        <div class="txn-filter-chips-row">
-          <div class="txn-filter-group" id="dateFilterChips">
-            <button type="button" class="f-chip active" data-date="all">All Dates</button>
-            <button type="button" class="f-chip" data-date="this-week">This Week</button>
-            <button type="button" class="f-chip" data-date="this-month">This Month</button>
-            <button type="button" class="f-chip" data-date="custom">Custom 📅</button>
-          </div>
-          <div class="f-chip-divider"></div>
-          <div class="txn-filter-group" id="typeFilterChips">
-            <button type="button" class="f-chip active" data-type="all">All Types</button>
-            <button type="button" class="f-chip" data-type="expense">Expenses (−)</button>
-            <button type="button" class="f-chip" data-type="income">Income (+)</button>
-            <button type="button" class="f-chip" data-type="transfer">Transfers (🔄)</button>
+<div id="tabViewport">
+  <div id="tabSlider">
+    <!-- PANE 0: HOME -->
+    <div class="tab-pane" id="paneHome">
+      <main class="feed">
+        <!-- 0. GUEST RECONNECT BANNER -->
+        <div class="guest-sync-banner" id="guestSyncBanner" style="display:none">
+          <div class="txt"><b>☁ Cloud Backup Available</b><br/>Sync and back up your budget across devices.</div>
+          <div class="actions">
+            <button type="button" class="btn-link" id="btnLinkGuestBanner">Log in & Sync</button>
+            <button type="button" class="btn-dismiss" id="btnDismissGuestBanner" aria-label="Dismiss">✕</button>
           </div>
         </div>
 
-        <!-- Inline Collapsible Custom Date Range Picker -->
-        <div class="custom-date-bar" id="customDateBar" style="display:none">
-          <div class="date-field">
-            <label for="filterDateFrom">From:</label>
-            <input type="date" id="filterDateFrom" class="date-input" />
+        <!-- 1. TOTAL BALANCE CARD -->
+        <section class="card balance-card">
+          <div class="bal-eyebrow" id="balEyebrow"><span>Total Balance:</span></div>
+          <div class="bal-big num" id="balance">₱0.00</div>
+          <div class="bal-subrow">
+            <span class="in"><span class="lab">Income:</span><b class="num" id="income">+₱0.00</b></span>
+            <span class="sp"><span class="lab">Spent:</span><b class="num" id="spent">-₱0.00</b></span>
           </div>
-          <div class="date-field">
-            <label for="filterDateTo">To:</label>
-            <input type="date" id="filterDateTo" class="date-input" />
+        </section>
+
+        <!-- 2. MULTI-WALLET CAROUSEL -->
+        <section class="wallets-section" id="walletsSection">
+          <div class="wallets-carousel" id="walletCarousel"></div>
+          <div class="wallet-quick-actions">
+            <button type="button" class="w-action-btn" id="btnQuickTransfer"><span>🔄</span> Transfer</button>
+            <button type="button" class="w-action-btn" id="btnQuickReconcile"><span>⚖️</span> Reconcile</button>
           </div>
-          <button type="button" class="date-apply-btn" id="btnApplyCustomDate">Apply</button>
+        </section>
+
+        <!-- 3. SAFE TO SPEND / FORECASTER (HERO WIDGET) -->
+        <section class="card fc hero-card" id="forecastCard">
+          <div class="sec-head">
+            <h2>💸 Safe to Spend</h2>
+            <span class="side link" id="editAllowance">Set baon</span>
+          </div>
+          <div class="fc-body" id="fcBody"></div>
+        </section>
+
+        <!-- 4. RAINBOW GAUGE ARCH CARD -->
+        <section class="card chart-card" id="donutCard">
+          <div class="arch-wrap">
+            <svg id="donutSvg" viewBox="0 0 340 180" class="arch-svg"></svg>
+          </div>
+        </section>
+
+        <!-- 5. RECENT TRANSACTIONS CARD -->
+        <section class="card txns-card">
+          <div class="sec-head">
+            <h2>Recent Transactions</h2>
+            <span class="side"><span class="link" id="exportTxns" title="Export transactions to CSV">📥 Export</span> &nbsp; <span class="link" id="syncNow">🔄 Sync</span> &nbsp; <span class="link" id="clearAll" style="color:var(--spent)">Clear All</span></span>
+          </div>
+
+          <!-- Search & Filter Controls -->
+          <div class="txn-controls">
+            <div class="txn-search-wrap">
+              <span class="txn-search-icon">🔍</span>
+              <input type="text" id="txnSearchInput" class="txn-search-input" placeholder="Search store, person, note, ref, amount..." autocomplete="off" />
+              <button type="button" id="txnSearchClear" class="txn-search-clear" aria-label="Clear search">✕</button>
+            </div>
+
+            <div class="txn-filter-chips-row">
+              <div class="txn-filter-group" id="dateFilterChips">
+                <button type="button" class="f-chip active" data-date="all">All Dates</button>
+                <button type="button" class="f-chip" data-date="this-week">This Week</button>
+                <button type="button" class="f-chip" data-date="this-month">This Month</button>
+                <button type="button" class="f-chip" data-date="custom">Custom 📅</button>
+              </div>
+              <div class="f-chip-divider"></div>
+              <div class="txn-filter-group" id="typeFilterChips">
+                <button type="button" class="f-chip active" data-type="all">All Types</button>
+                <button type="button" class="f-chip" data-type="expense">Expenses (−)</button>
+                <button type="button" class="f-chip" data-type="income">Income (+)</button>
+                <button type="button" class="f-chip" data-type="transfer">Transfers (🔄)</button>
+              </div>
+            </div>
+
+            <!-- Inline Collapsible Custom Date Range Picker -->
+            <div class="custom-date-bar" id="customDateBar" style="display:none">
+              <div class="date-field">
+                <label for="filterDateFrom">From:</label>
+                <input type="date" id="filterDateFrom" class="date-input" />
+              </div>
+              <div class="date-field">
+                <label for="filterDateTo">To:</label>
+                <input type="date" id="filterDateTo" class="date-input" />
+              </div>
+              <button type="button" class="date-apply-btn" id="btnApplyCustomDate">Apply</button>
+            </div>
+
+            <!-- Filter Summary / Count Pill -->
+            <div class="filter-summary-row" id="filterSummaryRow" style="display:none">
+              <span class="filter-summary-text" id="filterSummaryText">Found 0 transactions · Total: ₱0.00</span>
+              <button type="button" class="filter-reset-btn" id="btnResetFilters">✕ Reset Filters</button>
+            </div>
+          </div>
+
+          <!-- Scrollable / Collapsible Transactions Wrapper -->
+          <div class="txns-wrap" id="txnsWrap">
+            <div class="txns" id="txns"></div>
+            <div class="txns-fade" id="txnsFade"></div>
+          </div>
+
+          <!-- Expand / Show More Footer -->
+          <div class="txns-footer" id="txnsFooter">
+            <button type="button" class="txns-expand-btn" id="btnToggleTxnsExpand">Show more ▾</button>
+          </div>
+        </section>
+
+        <!-- 6. CATEGORIES BREAKDOWN CARD -->
+        <section class="card cats-card">
+          <div class="sec-head">
+            <h2>Categories Breakdown</h2>
+            <span class="side link" id="editGoals">Limits 🎯</span>
+          </div>
+          <div class="cats-list" id="cats"></div>
+        </section>
+      </main>
+    </div>
+
+    <!-- PANE 1: UTANG TRACKER -->
+    <div class="tab-pane" id="paneUtang">
+      <section id="utangSection" aria-label="Utang tracker">
+        <div class="utang-header">
+          <h2>🤝 Utang Tracker</h2>
+          <button class="utang-add-btn" id="addUtangBtn">＋ New Utang</button>
         </div>
 
-        <!-- Filter Summary / Count Pill -->
-        <div class="filter-summary-row" id="filterSummaryRow" style="display:none">
-          <span class="filter-summary-text" id="filterSummaryText">Found 0 transactions · Total: ₱0.00</span>
-          <button type="button" class="filter-reset-btn" id="btnResetFilters">✕ Reset Filters</button>
+        <div class="utang-group" id="utangGroupLent">
+          <div class="utang-group-head">
+            🤲 They Owe You
+            <span class="utang-total" id="utangTotalLent"></span>
+          </div>
+          <div id="utangOwedToMe"></div>
         </div>
-      </div>
 
-      <!-- Scrollable / Collapsible Transactions Wrapper -->
-      <div class="txns-wrap" id="txnsWrap">
-        <div class="txns" id="txns"></div>
-        <div class="txns-fade" id="txnsFade"></div>
-      </div>
+        <div class="utang-group" id="utangGroupBorrowed">
+          <div class="utang-group-head">
+            🙏 You Owe Them
+            <span class="utang-total" id="utangTotalBorrowed"></span>
+          </div>
+          <div id="utangIOwe"></div>
+        </div>
 
-      <!-- Expand / Show More Footer -->
-      <div class="txns-footer" id="txnsFooter">
-        <button type="button" class="txns-expand-btn" id="btnToggleTxnsExpand">Show more ▾</button>
-      </div>
-    </section>
+        <button class="utang-settled-btn" id="settledBtn">📁 Paid Utangs</button>
+      </section>
+    </div>
 
-    <!-- 6. CATEGORIES BREAKDOWN CARD -->
-    <section class="card cats-card">
-      <div class="sec-head">
-        <h2>Categories Breakdown</h2>
-        <span class="side link" id="editGoals">Limits 🎯</span>
-      </div>
-      <div class="cats-list" id="cats"></div>
-    </section>
+    <!-- PANE 2: REWARDS & XP HUB -->
+    <div class="tab-pane" id="paneRewards">
+      <section id="rewardsSection" aria-label="Rewards & Achievements">
+        <div class="rewards-header">
+          <h2>🏆 Rewards & XP</h2>
+          <span class="rewards-streak-chip" id="hubStreakChip">🔥 0-day streak</span>
+        </div>
+
+        <div class="card rewards-hero-card">
+          <div class="lvl-head" style="padding:0">
+            <div class="lvl-ring" id="hubLvlRing">1</div>
+            <div class="lvl-meta">
+              <div class="t" id="hubLvlTitle">Baon Newbie</div>
+              <div class="s" id="hubLvlSub">0 XP</div>
+              <div class="xp-track" style="background:var(--track);margin-top:8px"><span id="hubLvlBar" style="width:0%"></span></div>
+            </div>
+          </div>
+          <div class="rewards-perks" id="hubLvlPerk">🎯 Keep tracking expenses daily to level up and earn badges!</div>
+        </div>
+
+        <div class="card rewards-badges-card">
+          <div class="sec-head">
+            <h2>Badges & Milestones</h2>
+            <span class="side" id="hubBadgeCount">0 / 9 unlocked</span>
+          </div>
+          <div class="badge-grid" id="hubBadgeGrid"></div>
+        </div>
+      </section>
+    </div>
+
+    <!-- PANE 3: ADD HUB -->
+    <div class="tab-pane" id="paneAdd">
+      <section id="addSection" aria-label="Add Transaction & Actions">
+        <div class="add-hub-header">
+          <h2>➕ Add Hub</h2>
+          <p>Log a transaction or perform quick money actions.</p>
+        </div>
+
+        <!-- Quick Action Cards -->
+        <div class="add-quick-grid">
+          <button type="button" class="add-quick-card" id="hubBtnTransfer">
+            <span class="ic">🔄</span>
+            <div class="lbl">Transfer</div>
+            <div class="sub">Move between accounts</div>
+          </button>
+          <button type="button" class="add-quick-card" id="hubBtnReconcile">
+            <span class="ic">⚖️</span>
+            <div class="lbl">Reconcile</div>
+            <div class="sub">Match real cash</div>
+          </button>
+          <button type="button" class="add-quick-card" id="hubBtnUtang">
+            <span class="ic">🤝</span>
+            <div class="lbl">New Utang</div>
+            <div class="sub">Track loan / debt</div>
+          </button>
+        </div>
+
+        <!-- Full In-Page Add Form -->
+        <div class="card add-form-card">
+          <div class="sec-head">
+            <h2>New Transaction</h2>
+            <span class="side" style="color:var(--muted)">Instant Save</span>
+          </div>
+          <form id="hubAddForm" autocomplete="off" style="padding-top:4px">
+            <div class="field">
+              <label for="hubDesc">Description</label>
+              <input id="hubDesc" type="text" placeholder="e.g. Jollibee, Grab, Dorm Rent" />
+            </div>
+            <div class="suggest" id="hubSuggest">
+              <span id="hubSuggestText"></span>
+              <button type="button" id="hubApplySuggest">Use</button>
+            </div>
+            <div class="field">
+              <label for="hubTxnWallet">Account / Wallet</label>
+              <select id="hubTxnWallet" class="f"></select>
+            </div>
+            <div class="field">
+              <label for="hubAmount">Amount</label>
+              <div class="amt-wrap">
+                <span class="sym" id="hubAmtSym">₱</span>
+                <input id="hubAmount" class="num" type="number" min="0" step="0.01" placeholder="0.00" />
+              </div>
+            </div>
+            <div class="field">
+              <label>Type</label>
+              <div class="type-toggle">
+                <button type="button" id="hubBtnExp" class="on-exp" data-type="expense">Expense (−)</button>
+                <button type="button" id="hubBtnInc" data-type="income">Income (+)</button>
+              </div>
+            </div>
+            <div class="field">
+              <label for="hubCategory">Category</label>
+              <select id="hubCategory" class="f"></select>
+            </div>
+            <button type="submit" class="submit" id="hubSubmit">Save Transaction</button>
+          </form>
+        </div>
+      </section>
+    </div>
   </div>
-</main>
+</div>
 
 <!-- Floating Action Button (FAB) -->
 <button type="button" class="fab" id="fabAdd" aria-label="Add transaction">
@@ -1417,117 +1746,50 @@
   </div>
 </div>
 
-<!-- ============ UTANG SECTION ============ -->
-<section id="utangSection" style="display:none" aria-label="Utang tracker">
-  <div class="utang-header">
-    <h2>🤝 Utang Tracker</h2>
-    <button class="utang-add-btn" id="addUtangBtn">＋ New Utang</button>
-  </div>
-
-  <div class="utang-group" id="utangGroupLent">
-    <div class="utang-group-head">
-      🤲 They Owe You
-      <span class="utang-total" id="utangTotalLent"></span>
-    </div>
-    <div id="utangOwedToMe"></div>
-  </div>
-
-  <div class="utang-group" id="utangGroupBorrowed">
-    <div class="utang-group-head">
-      🙏 You Owe Them
-      <span class="utang-total" id="utangTotalBorrowed"></span>
-    </div>
-    <div id="utangIOwe"></div>
-  </div>
-
-  <button class="utang-settled-btn" id="settledBtn">📁 Paid Utangs</button>
-</section>
-
-<!-- ============ ADD UTANG MODAL ============ -->
-<div class="scrim" id="utangScrim">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="utangModalTitle">
+<!-- ============ CLOUD CONNECT / LOGIN MODAL ============ -->
+<div class="scrim" id="cloudConnectScrim">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="cloudConnectTitle">
     <div class="modal-head">
       <div>
-        <h3 id="utangModalTitle">🤝 New Utang</h3>
-        <p>Record a loan you gave or received.</p>
+        <h3 id="cloudConnectTitle">☁ Sync to Cloud</h3>
+        <p>Log in or sign up to back up your budget across devices.</p>
       </div>
-      <button class="x" id="utangClose" aria-label="Close">✕</button>
+      <button class="x" id="closeCloudConnect" aria-label="Close">✕</button>
     </div>
-    <div class="goal-list">
+    <div class="auth-err" id="cloudConnectErr"></div>
+    <form id="cloudConnectForm" autocomplete="on">
       <div class="field">
-        <label for="utangPerson">Person's name</label>
-        <input id="utangPerson" type="text" placeholder="e.g. Juan, Ate Marie" autocomplete="off" />
+        <label for="ccEmail">Email</label>
+        <input id="ccEmail" type="email" placeholder="you@university.edu" autocomplete="email" required />
       </div>
       <div class="field">
-        <label for="utangAmount">Total loan amount</label>
-        <div class="amt-wrap">
-          <span class="sym" id="utangSym">₱</span>
-          <input id="utangAmount" class="num" type="number" min="0.01" step="0.01" placeholder="0.00" style="padding-left:30px" />
-        </div>
+        <label for="ccPass">Password</label>
+        <input id="ccPass" type="password" placeholder="At least 6 characters" autocomplete="current-password" required />
       </div>
-      <div class="field">
-        <label>Direction</label>
-        <div class="dir-toggle">
-          <button type="button" id="dirLent" class="on-lent" data-dir="lent">🤲 I Lent</button>
-          <button type="button" id="dirBorrowed" data-dir="borrowed">🙏 I Borrowed</button>
-        </div>
-      </div>
-      <div class="field">
-        <label for="utangDue">Due date <span style="font-weight:500;color:var(--muted)">(optional)</span></label>
-        <input id="utangDue" type="date" class="f" />
-      </div>
-      <div class="field">
-        <label for="utangNotes">Notes / purpose <span style="font-weight:500;color:var(--muted)">(optional)</span></label>
-        <input id="utangNotes" type="text" placeholder="e.g. para sa tuition, dorm deposit" autocomplete="off" />
-      </div>
-    </div>
-    <div class="modal-foot">
-      <button class="ghost" id="utangCancel" style="flex:1">Cancel</button>
-      <button class="submit" id="utangSave" style="flex:1">Save Utang</button>
-    </div>
+      <button type="submit" class="submit" id="btnSubmitCloudConnect">Log in & Sync</button>
+      <div class="auth-divider"><span>or</span></div>
+      <button type="button" class="btn-offline" id="btnContinueGuestFromModal">Continue without syncing (Stay Offline)</button>
+    </form>
   </div>
 </div>
 
-<!-- ============ LOG PAYMENT MODAL ============ -->
-<div class="scrim" id="payScrim">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="payModalTitle">
-    <div class="modal-head">
+<!-- ============ GUEST DATA LOSS WARNING MODAL ============ -->
+<div class="scrim" id="guestWarnScrim">
+  <div class="modal warn-card" role="dialog" aria-modal="true" aria-labelledby="warnTitle">
+    <div class="warn-icon">⚠️</div>
+    <div class="modal-head" style="justify-content:center;text-align:center;margin-bottom:0">
       <div>
-        <h3 id="payModalTitle">💳 Log a Payment</h3>
-        <p id="payModalSub">Record a partial or full payment.</p>
-      </div>
-      <button class="x" id="payClose" aria-label="Close">✕</button>
-    </div>
-    <div class="goal-list">
-      <div class="field">
-        <label for="payAmount">Payment amount</label>
-        <div class="amt-wrap">
-          <span class="sym" id="paySym">₱</span>
-          <input id="payAmount" class="num" type="number" min="0.01" step="0.01" placeholder="0.00" style="padding-left:30px" />
-        </div>
-        <span id="payRemaining" style="font-size:12.5px;color:var(--muted);font-weight:600;margin-top:2px"></span>
+        <h3 id="warnTitle" style="color:#f59e0b">Local Only — No Cloud Backup</h3>
       </div>
     </div>
-    <div class="modal-foot">
-      <button class="ghost" id="payCancel" style="flex:1">Cancel</button>
-      <button class="submit" id="paySave" style="flex:1">Log Payment</button>
+    <div class="warn-box">
+      <p>• In <strong>Guest Mode</strong>, your transactions, custom accounts, and utang loans are saved <strong>ONLY on this device</strong>.</p>
+      <p>• Your data will <strong>NOT be backed up online</strong> even when you are connected to the internet.</p>
+      <p>• <strong>Warning:</strong> If you uninstall or clear app data, all your financial records will be <strong>permanently deleted</strong>.</p>
     </div>
-  </div>
-</div>
-
-<!-- ============ PAID UTANGS MODAL ============ -->
-<div class="scrim" id="paidScrim">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="paidModalTitle">
-    <div class="modal-head">
-      <div>
-        <h3 id="paidModalTitle">📁 Paid Utangs</h3>
-        <p>All fully settled loans.</p>
-      </div>
-      <button class="x" id="paidClose" aria-label="Close">✕</button>
-    </div>
-    <div class="goal-list" id="paidList"></div>
-    <div class="modal-foot">
-      <button class="submit" id="paidDone" style="flex:1">Done</button>
+    <div class="modal-foot" style="flex-direction:column;gap:8px">
+      <button class="submit" id="btnConfirmStayGuest" style="background:#f59e0b;color:#111;width:100%;font-weight:800">I Understand, Stay as Guest</button>
+      <button class="ghost" id="btnBackToCloudConnect" style="width:100%">Back to Cloud Sign in</button>
     </div>
   </div>
 </div>
@@ -1538,10 +1800,10 @@
 
 <!-- Bottom Navigation Bar -->
 <nav id="tabbar" aria-label="Quick actions">
-  <button type="button" data-act="home" id="tabHome" class="active"><span>🏠</span>Home</button>
-  <button type="button" data-act="utang" id="tabUtang"><span>🤝</span>Utang</button>
-  <button type="button" data-act="rewards"><span>🏆</span>Rewards</button>
-  <button type="button" data-act="add" id="tabAdd" style="color:var(--accent)"><span>➕</span>Add</button>
+  <button type="button" data-tab="0" data-act="home" id="tabHome" class="active"><span>🏠</span>Home</button>
+  <button type="button" data-tab="1" data-act="utang" id="tabUtang"><span>🤝</span>Utang</button>
+  <button type="button" data-tab="2" data-act="rewards" id="tabRewards"><span>🏆</span>Rewards</button>
+  <button type="button" data-tab="3" data-act="add" id="tabAdd" style="color:var(--accent)"><span>➕</span>Add</button>
 </nav>
 
 <div id="onb"><div class="onb-card" id="onbCard"></div></div>
@@ -1663,8 +1925,11 @@
   function save() {
     if (!currentUser) return;
     localStorage.setItem(dataKey(currentUser.email), JSON.stringify(state));
-    setDirty(false);
-    if (window.Cloud && Cloud.pushState) Cloud.pushState(state);
+    if (window.Cloud && Cloud.pushState) {
+      Cloud.pushState(state);
+    } else {
+      setDirty(false);
+    }
     if (typeof checkProgress === "function") checkProgress();
   }
 
@@ -1672,8 +1937,10 @@
     dirty = v;
     var dot = document.getElementById("syncDot");
     var lab = document.getElementById("syncLabel");
-    if (dot) dot.classList.toggle("dirty", v);
-    if (lab) lab.textContent = v ? "Sync Now" : "Synced";
+    if (dot) {
+      dot.className = "sync-dot " + (v ? (navigator.onLine ? "syncing" : "offline") : "synced");
+    }
+    if (lab) lab.textContent = v ? (navigator.onLine ? "Syncing..." : "Offline ☁") : "Synced ✓";
   }
 
   // ---------- Formatting ----------
@@ -2941,21 +3208,287 @@
   }
   function closePaidUtangs(){ el("#paidScrim").classList.remove("show"); }
 
-  // ---- Tab switching ----
-  function showUtangTab(){
-    el("main").style.display = "none";
-    el("#utangSection").style.display = "block";
-    el("#tabHome").classList.remove("active");
-    el("#tabUtang").classList.add("active");
-    el("#fabAdd").style.display = "none";
-    renderUtang();
+  // =====================================================================
+  //  TAB NAVIGATION & REAL-TIME SWIPE ENGINE
+  // =====================================================================
+  var currentTabIndex = 0;
+  var TAB_COUNT = 4; // 0: Home, 1: Utang, 2: Rewards, 3: Add Hub
+  var swipeEngineInitialized = false;
+
+  function renderRewardsHub(){
+    if (!state) return;
+    var st = computeStats(state);
+    var ring = el("#hubLvlRing"); if (ring) ring.textContent = st.level;
+    var title = el("#hubLvlTitle"); if (title) title.textContent = levelTitle(st.level);
+    var sub = el("#hubLvlSub"); if (sub) sub.textContent = st.xp + " XP · " + st.xpInLevel + "/" + st.xpForLevel + " to Lv " + (st.level + 1);
+    var bar = el("#hubLvlBar"); if (bar) bar.style.width = Math.round((st.xpInLevel / st.xpForLevel) * 100) + "%";
+    var streakChip = el("#hubStreakChip"); if (streakChip) streakChip.textContent = "🔥 " + st.streak + "-day tipid streak";
+
+    var grid = el("#hubBadgeGrid");
+    if (grid) {
+      grid.innerHTML = "";
+      var unlockedCount = 0;
+      BADGES.forEach(function(b){
+        var earned = b.test(st);
+        if (earned) unlockedCount++;
+        var d = document.createElement("div");
+        d.className = "badge" + (earned ? " earned" : "");
+        d.innerHTML = '<div class="ic">' + b.icon + '</div><div class="bn">' + esc(b.name) + '</div><div class="bd">' + esc(b.desc) + '</div>';
+        grid.appendChild(d);
+      });
+      var countEl = el("#hubBadgeCount");
+      if (countEl) countEl.textContent = unlockedCount + " / " + BADGES.length + " unlocked";
+    }
   }
-  function showHomeTab(){
-    el("main").style.display = "";
-    el("#utangSection").style.display = "none";
-    el("#tabHome").classList.add("active");
-    el("#tabUtang").classList.remove("active");
-    el("#fabAdd").style.display = "grid";
+
+  var hubTxnType = "expense";
+  function setHubType(type){
+    hubTxnType = type;
+    var bExp = el("#hubBtnExp"); if (bExp) bExp.className = (type === "expense" ? "on-exp" : "");
+    var bInc = el("#hubBtnInc"); if (bInc) bInc.className = (type === "income" ? "on-inc" : "");
+    renderHubCategories();
+  }
+
+  function renderHubWallets(){
+    var sel = el("#hubTxnWallet"); if (!sel || !state || !Array.isArray(state.wallets)) return;
+    var prev = sel.value;
+    sel.innerHTML = "";
+    state.wallets.forEach(function(w){
+      var opt = document.createElement("option");
+      opt.value = w.id;
+      opt.textContent = (w.icon || "💳") + " " + w.name;
+      sel.appendChild(opt);
+    });
+    if (prev && state.wallets.some(function(w){ return w.id === prev; })) sel.value = prev;
+    else if (state.wallets[0]) sel.value = state.wallets[0].id;
+  }
+
+  function renderHubCategories(){
+    var sel = el("#hubCategory"); if (!sel) return;
+    var prev = sel.value;
+    sel.innerHTML = "";
+    var cats = hubTxnType === "expense" ? EXPENSE_CATS : INCOME_CATS;
+    cats.forEach(function(c){
+      var opt = document.createElement("option");
+      opt.value = c.name;
+      opt.textContent = c.icon + " " + c.name;
+      sel.appendChild(opt);
+    });
+    if (prev && cats.some(function(c){ return c.name === prev; })) sel.value = prev;
+    else if (cats[0]) sel.value = cats[0].name;
+  }
+
+  function updateHubSuggest(){
+    var input = el("#hubDesc");
+    var sug = el("#hubSuggest");
+    var text = el("#hubSuggestText");
+    if (!input || !sug || !text) return;
+    if (hubTxnType !== "expense"){ sug.classList.remove("show"); return; }
+    var cat = suggestCategory(input.value);
+    if (cat && cat !== el("#hubCategory").value){
+      text.textContent = "Looks like " + cat + " — switch?";
+      sug.dataset.cat = cat;
+      sug.classList.add("show");
+    } else {
+      sug.classList.remove("show");
+    }
+  }
+
+  function applyHubSuggest(){
+    var sug = el("#hubSuggest");
+    if (!sug || !sug.dataset.cat) return;
+    var cat = sug.dataset.cat;
+    var sel = el("#hubCategory");
+    if (sel) sel.value = cat;
+    sug.classList.remove("show");
+  }
+
+  function renderAddHub(){
+    if (!state) return;
+    var symEl = el("#hubAmtSym"); if (symEl) symEl.textContent = sym();
+    renderHubWallets();
+    renderHubCategories();
+  }
+
+  function saveHubTxn(e){
+    e.preventDefault();
+    var desc = el("#hubDesc").value.trim() || (hubTxnType === "expense" ? "Expense" : "Income");
+    var amt = parseFloat(el("#hubAmount").value);
+    var cat = el("#hubCategory").value;
+    var walletId = el("#hubTxnWallet").value || "w-cash";
+    if (!(amt > 0)){
+      toast("Enter an amount greater than 0");
+      el("#hubAmount").focus();
+      return;
+    }
+    var item = {
+      id: id(),
+      desc: desc,
+      amount: Math.round(amt * 100) / 100,
+      type: hubTxnType,
+      cat: cat,
+      walletId: walletId,
+      ts: now(),
+      updated_at: now(),
+      deleted: false
+    };
+    state.txns.push(item);
+    save();
+    render();
+    toast((hubTxnType === "expense" ? "Spent " : "Received ") + fmt(item.amount) + " ✓");
+    el("#hubDesc").value = "";
+    el("#hubAmount").value = "";
+    var sug = el("#hubSuggest"); if (sug) sug.classList.remove("show");
+    goToTab(0, true);
+  }
+
+  function goToTab(index, animated){
+    index = Math.max(0, Math.min(TAB_COUNT - 1, index));
+    currentTabIndex = index;
+    var slider = el("#tabSlider");
+    if (slider) {
+      slider.classList.remove("is-dragging");
+      if (animated === false) {
+        slider.style.transition = "none";
+      } else {
+        slider.style.transition = "transform .32s cubic-bezier(0.22, 1, 0.36, 1)";
+      }
+      slider.style.transform = "translate3d(-" + (index * 100) + "vw, 0, 0)";
+    }
+
+    // Update Tab Bar Active Button
+    var tabs = document.querySelectorAll("#tabbar button");
+    tabs.forEach(function(b){
+      var tIdx = parseInt(b.getAttribute("data-tab"), 10);
+      b.classList.toggle("active", tIdx === index);
+    });
+
+    // FAB Visibility: Show on Home(0), Utang(1), Rewards(2); Hide on Add Hub(3)
+    var fab = el("#fabAdd");
+    if (fab) {
+      fab.style.display = (index === 3) ? "none" : "grid";
+    }
+
+    // Render Tab Content
+    if (index === 0) { render(); }
+    else if (index === 1) { renderUtang(); }
+    else if (index === 2) { renderRewardsHub(); }
+    else if (index === 3) { renderAddHub(); }
+  }
+
+  // Legacy tab helpers for compatibility
+  function showUtangTab(){ goToTab(1, true); }
+  function showHomeTab(){ goToTab(0, true); }
+
+  // Touch Gesture Engine for Real-Time 1:1 Swipe
+  function initSwipeEngine(){
+    if (swipeEngineInitialized) return;
+    swipeEngineInitialized = true;
+
+    var viewport = el("#tabViewport");
+    var slider = el("#tabSlider");
+    if (!viewport || !slider) return;
+
+    var startX = 0, startY = 0, currentX = 0, currentY = 0;
+    var startTime = 0;
+    var gestureDirection = null; // null | 'horizontal' | 'vertical' | 'ignore'
+
+    function isInsideHorizontalScrollable(target){
+      if (!target) return false;
+      return !!target.closest(".wallets-carousel, .txn-filter-chips-row, .custom-date-bar, input, select, textarea, .modal, .scrim.show");
+    }
+
+    viewport.addEventListener("touchstart", function(e){
+      if (e.touches.length !== 1) { gestureDirection = "ignore"; return; }
+      if (document.querySelector(".scrim.show")) { gestureDirection = "ignore"; return; }
+      if (isInsideHorizontalScrollable(e.target)) {
+        gestureDirection = "ignore";
+        return;
+      }
+      var touch = e.touches[0];
+      startX = touch.clientX;
+      startY = touch.clientY;
+      currentX = startX;
+      currentY = startY;
+      startTime = Date.now();
+      gestureDirection = null;
+    }, { passive: true });
+
+    viewport.addEventListener("touchmove", function(e){
+      if (gestureDirection === "ignore" || e.touches.length !== 1) return;
+      var touch = e.touches[0];
+      currentX = touch.clientX;
+      currentY = touch.clientY;
+      var deltaX = currentX - startX;
+      var deltaY = currentY - startY;
+
+      if (gestureDirection === null) {
+        if (Math.abs(deltaY) > 8 && Math.abs(deltaY) >= Math.abs(deltaX)) {
+          gestureDirection = "vertical";
+          return;
+        } else if (Math.abs(deltaX) > 8 && Math.abs(deltaX) > Math.abs(deltaY)) {
+          gestureDirection = "horizontal";
+          slider.classList.add("is-dragging");
+        }
+      }
+
+      if (gestureDirection === "horizontal") {
+        if (e.cancelable) e.preventDefault();
+        // Rubber-band resistance at boundaries
+        if ((currentTabIndex === 0 && deltaX > 0) || (currentTabIndex === TAB_COUNT - 1 && deltaX < 0)) {
+          deltaX = deltaX * 0.32;
+        }
+        slider.style.transform = "translate3d(calc(-" + (currentTabIndex * 100) + "vw + " + deltaX + "px), 0, 0)";
+      }
+    }, { passive: false });
+
+    function handleTouchEnd(e){
+      if (gestureDirection === "horizontal") {
+        slider.classList.remove("is-dragging");
+        var deltaX = currentX - startX;
+        var elapsed = Date.now() - startTime;
+        var velocity = Math.abs(deltaX) / (elapsed || 1);
+        var screenW = window.innerWidth || 360;
+        var threshold = screenW * 0.20;
+
+        if (deltaX < -threshold || (deltaX < -35 && velocity > 0.25)) {
+          if (currentTabIndex < TAB_COUNT - 1) {
+            goToTab(currentTabIndex + 1, true);
+          } else {
+            goToTab(currentTabIndex, true);
+          }
+        } else if (deltaX > threshold || (deltaX > 35 && velocity > 0.25)) {
+          if (currentTabIndex > 0) {
+            goToTab(currentTabIndex - 1, true);
+          } else {
+            goToTab(currentTabIndex, true);
+          }
+        } else {
+          goToTab(currentTabIndex, true);
+        }
+      }
+      gestureDirection = null;
+    }
+
+    viewport.addEventListener("touchend", handleTouchEnd, { passive: true });
+    viewport.addEventListener("touchcancel", handleTouchEnd, { passive: true });
+
+    // Window resize handler: keeps active slide in position
+    window.addEventListener("resize", function(){
+      goToTab(currentTabIndex, false);
+    });
+
+    // Keyboard left/right arrow keys navigation support
+    document.addEventListener("keydown", function(e){
+      var tag = document.activeElement ? document.activeElement.tagName : "";
+      if (["INPUT", "SELECT", "TEXTAREA"].indexOf(tag) !== -1) return;
+      if (document.querySelector(".scrim.show")) return;
+      if (e.key === "ArrowLeft" && currentTabIndex > 0) {
+        goToTab(currentTabIndex - 1, true);
+      } else if (e.key === "ArrowRight" && currentTabIndex < TAB_COUNT - 1) {
+        goToTab(currentTabIndex + 1, true);
+      }
+    });
   }
 
   // ---------- Wire up ----------
@@ -2967,6 +3500,19 @@
   el("#btnInc").addEventListener("click", function(){ setType("income"); });
   el("#desc").addEventListener("input", updateSuggest);
   el("#applySuggest").addEventListener("click", applySuggest);
+
+  // Add Hub form wire-up
+  var hubBtnExp = el("#hubBtnExp"); if (hubBtnExp) hubBtnExp.addEventListener("click", function(){ setHubType("expense"); updateHubSuggest(); });
+  var hubBtnInc = el("#hubBtnInc"); if (hubBtnInc) hubBtnInc.addEventListener("click", function(){ setHubType("income"); });
+  var hubDesc = el("#hubDesc"); if (hubDesc) hubDesc.addEventListener("input", updateHubSuggest);
+  var hubApplySuggest = el("#hubApplySuggest"); if (hubApplySuggest) hubApplySuggest.addEventListener("click", applyHubSuggest);
+  var hubAddForm = el("#hubAddForm"); if (hubAddForm) hubAddForm.addEventListener("submit", saveHubTxn);
+
+  // Add Hub quick action shortcuts
+  var hubTrf = el("#hubBtnTransfer"); if (hubTrf) hubTrf.addEventListener("click", openTransfer);
+  var hubRec = el("#hubBtnReconcile"); if (hubRec) hubRec.addEventListener("click", openReconcile);
+  var hubUtg = el("#hubBtnUtang"); if (hubUtg) hubUtg.addEventListener("click", function(){ goToTab(1, true); setTimeout(openAddUtang, 120); });
+
   el("#currency").addEventListener("change", function(){ state.currency = this.value; save(); render(); });
   el("#editGoals").addEventListener("click", openGoals);
   el("#menuGoals").addEventListener("click", function(){ el("#menuPop").classList.remove("show"); openGoals(); });
@@ -2980,7 +3526,7 @@
   el("#alCancel").addEventListener("click", closeAllowance);
   el("#alSave").addEventListener("click", saveAllowance);
   el("#alScrim").addEventListener("click", function(e){ if (e.target === this) closeAllowance(); });
-  el("#rewardsBtn").addEventListener("click", function(){ el("#menuPop").classList.remove("show"); openAchievements(); });
+  el("#rewardsBtn").addEventListener("click", function(){ el("#menuPop").classList.remove("show"); goToTab(2, true); });
   el("#achClose").addEventListener("click", closeAchievements);
   el("#achDone").addEventListener("click", closeAchievements);
   el("#achScrim").addEventListener("click", function(e){ if (e.target === this) closeAchievements(); });
@@ -3087,9 +3633,163 @@
     }
   });
   el("#clearAll").addEventListener("click", clearAll);
-  var syncFn = function(){ save(); toast("Saved to this device ✓"); };
+
+  function showSyncedPill(){
+    var pill = el("#syncPill");
+    if (!pill) return;
+    pill.classList.add("show");
+    setTimeout(function(){ pill.classList.remove("show"); }, 2500);
+  }
+  window.showSyncedPill = showSyncedPill;
+
+  function checkGuestBanner(){
+    var banner = el("#guestSyncBanner");
+    if (!banner) return;
+    var isGuest = !currentUser || currentUser.isGuest || currentUser.isOfflineMode || currentUser.isAuthenticated === false;
+    if (isGuest && navigator.onLine && !sessionStorage.getItem("unibudget:dismiss_guest_banner")) {
+      banner.style.display = "flex";
+    } else {
+      banner.style.display = "none";
+    }
+  }
+  window.checkGuestBanner = checkGuestBanner;
+
+  function openCloudConnectModal(prefillEmail){
+    var scrim = el("#cloudConnectScrim");
+    if (!scrim) return;
+    var err = el("#cloudConnectErr"); if (err) err.classList.remove("show");
+    var emailInp = el("#ccEmail");
+    var passInp = el("#ccPass");
+    if (passInp) passInp.value = "";
+    if (emailInp) {
+      var last = Auth.getLastAccount();
+      var emailVal = prefillEmail || (last ? last.email : "") || (currentUser ? currentUser.email : "");
+      if (emailVal && emailVal.indexOf("@unibudget.local") === -1) {
+        emailInp.value = emailVal;
+      } else {
+        emailInp.value = "";
+      }
+    }
+    scrim.classList.add("show");
+    setTimeout(function(){
+      if (emailInp && emailInp.value) { passInp && passInp.focus(); }
+      else if (emailInp) { emailInp.focus(); }
+    }, 60);
+  }
+  function closeCloudConnectModal(){
+    var scrim = el("#cloudConnectScrim");
+    if (scrim) scrim.classList.remove("show");
+  }
+
+  function openGuestWarnModal(){
+    closeCloudConnectModal();
+    var scrim = el("#guestWarnScrim");
+    if (scrim) scrim.classList.add("show");
+  }
+  function closeGuestWarnModal(){
+    var scrim = el("#guestWarnScrim");
+    if (scrim) scrim.classList.remove("show");
+  }
+
+  async function submitCloudConnect(e){
+    e.preventDefault();
+    var err = el("#cloudConnectErr");
+    var email = el("#ccEmail").value.trim().toLowerCase();
+    var pass = el("#ccPass").value;
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      if (err) { err.textContent = "Enter a valid email address."; err.classList.add("show"); }
+      return;
+    }
+    if (pass.length < 6) {
+      if (err) { err.textContent = "Password must be at least 6 characters."; err.classList.add("show"); }
+      return;
+    }
+    var btn = el("#btnSubmitCloudConnect"); if (btn) { btn.disabled = true; btn.textContent = "Syncing…"; }
+    try {
+      var user;
+      try {
+        user = await Auth.login(email, pass);
+      } catch (loginErr) {
+        if (/no account|not found/i.test(loginErr.message || "")) {
+          user = await Auth.signup("Student", email, pass);
+        } else {
+          throw loginErr;
+        }
+      }
+      user.isAuthenticated = true;
+      user.isGuest = false;
+      user.isOfflineMode = false;
+      
+      var currentKey = dataKey(currentUser ? currentUser.email : "offline@unibudget.local");
+      var currentData = JSON.parse(localStorage.getItem(currentKey) || "null") || state;
+      localStorage.setItem(dataKey(email), JSON.stringify(currentData));
+
+      Auth.saveSession(user);
+      closeCloudConnectModal();
+      enterApp(user);
+      if (window.Cloud && Cloud.pushState) Cloud.pushState(currentData);
+      showSyncedPill();
+      celebrate("☁ Connected & synced with cloud!");
+    } catch (ex) {
+      if (err) { err.textContent = ex.message || "Failed to connect to cloud."; err.classList.add("show"); }
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = "Log in & Sync"; }
+    }
+  }
+
+  var syncFn = function(){
+    save();
+    var isGuest = !currentUser || currentUser.isGuest || currentUser.isOfflineMode || currentUser.isAuthenticated === false;
+    if (isGuest) {
+      openCloudConnectModal(currentUser ? currentUser.email : "");
+      return;
+    }
+    if (window.Cloud && Cloud.enabled && Cloud.syncNow) {
+      toast("Syncing with cloud...");
+      Cloud.syncNow().then(function(res){
+        if (res && res.ok) {
+          showSyncedPill();
+          toast("Synced with cloud ✓");
+        } else if (res && res.isGuest) {
+          openCloudConnectModal(currentUser ? currentUser.email : "");
+        } else if (res && res.offline) {
+          toast("Working offline — changes saved locally on this device");
+        } else {
+          toast("Saved locally (Sync pending)");
+        }
+      }).catch(function(){
+        toast("Saved locally (offline)");
+      });
+    } else {
+      toast("Saved to this device ✓");
+    }
+  };
   el("#syncBtn").addEventListener("click", syncFn);
   el("#syncNow").addEventListener("click", syncFn);
+
+  // Cloud connect modal events
+  var ccForm = el("#cloudConnectForm"); if (ccForm) ccForm.addEventListener("submit", submitCloudConnect);
+  var ccClose = el("#closeCloudConnect"); if (ccClose) ccClose.addEventListener("click", closeCloudConnectModal);
+  var ccScrim = el("#cloudConnectScrim"); if (ccScrim) ccScrim.addEventListener("click", function(e){ if (e.target===this) closeCloudConnectModal(); });
+  var btnContGuest = el("#btnContinueGuestFromModal"); if (btnContGuest) btnContGuest.addEventListener("click", openGuestWarnModal);
+
+  // Guest warning modal events
+  var btnConfirmGuest = el("#btnConfirmStayGuest"); if (btnConfirmGuest) btnConfirmGuest.addEventListener("click", function(){
+    closeGuestWarnModal();
+    toast("Continuing in Guest Mode (Offline only)");
+  });
+  var btnBackToCc = el("#btnBackToCloudConnect"); if (btnBackToCc) btnBackToCc.addEventListener("click", function(){
+    closeGuestWarnModal();
+    openCloudConnectModal();
+  });
+  var gwScrim = el("#guestWarnScrim"); if (gwScrim) gwScrim.addEventListener("click", function(e){ if (e.target===this) closeGuestWarnModal(); });
+
+  // Guest banner events
+  var btnLinkBanner = el("#btnLinkGuestBanner"); if (btnLinkBanner) btnLinkBanner.addEventListener("click", function(){ openCloudConnectModal(); });
+  var btnDismissBanner = el("#btnDismissGuestBanner"); if (btnDismissBanner) btnDismissBanner.addEventListener("click", function(){
+    sessionStorage.setItem("unibudget:dismiss_guest_banner", "1");
+    var b = el("#guestSyncBanner"); if (b) b.style.display = "none";
+  });
 
   // ---------- Spreadsheet Preview & Export Flow ----------
   var currentCsvExportData = null;
@@ -3419,6 +4119,7 @@
   // ---------- Auth ----------
   var USERS_KEY = "unibudget:users";
   var SESSION_KEY = "unibudget:session";
+  var LAST_ACC_KEY = "unibudget:last_account";
   function readUsers(){ try { return JSON.parse(localStorage.getItem(USERS_KEY)) || {}; } catch(e){ return {}; } }
   function writeUsers(u){ localStorage.setItem(USERS_KEY, JSON.stringify(u)); }
 
@@ -3433,17 +4134,52 @@
   var Auth = {
     async signup(name, email, pass){
       email = email.toLowerCase().trim();
-      if (cloudOn) return Cloud.signup(name, email, pass);
-      var users = readUsers();
-      if (users[email]) throw new Error("An account with this email already exists. Try logging in.");
-      var salt = randSalt();
-      users[email] = { name: name || email.split("@")[0], salt: salt, hash: await hashPw(pass, salt) };
-      writeUsers(users);
-      return { email: email, name: users[email].name };
+      var user;
+      if (cloudOn) {
+        user = await Cloud.signup(name, email, pass);
+      } else {
+        var users = readUsers();
+        if (users[email]) throw new Error("An account with this email already exists. Try logging in.");
+        user = { email: email, name: name || email.split("@")[0] };
+      }
+      try {
+        var uMap = readUsers();
+        var salt = (uMap[email] && uMap[email].salt) ? uMap[email].salt : randSalt();
+        uMap[email] = { name: user.name || name || email.split("@")[0], salt: salt, hash: await hashPw(pass, salt) };
+        writeUsers(uMap);
+      } catch(e){}
+      return user;
     },
     async login(email, pass){
       email = email.toLowerCase().trim();
-      if (cloudOn) return Cloud.login(email, pass);
+      if (cloudOn) {
+        try {
+          var user = await Cloud.login(email, pass);
+          try {
+            var uMap = readUsers();
+            var salt = (uMap[email] && uMap[email].salt) ? uMap[email].salt : randSalt();
+            uMap[email] = { name: user.name || email.split("@")[0], salt: salt, hash: await hashPw(pass, salt) };
+            writeUsers(uMap);
+          } catch(e){}
+          return user;
+        } catch (cloudErr) {
+          var isNetErr = !navigator.onLine || /fetch|network|offline|failed|abort/i.test(cloudErr.message || "");
+          if (isNetErr) {
+            var uMap = readUsers();
+            var u = uMap[email];
+            if (u && u.hash && u.salt) {
+              var h = await hashPw(pass, u.salt);
+              if (h === u.hash) {
+                return { email: email, name: u.name, isOfflineAuth: true };
+              } else {
+                throw new Error("Incorrect password for offline account.");
+              }
+            }
+          }
+          throw cloudErr;
+        }
+      }
+
       var users = readUsers();
       var u = users[email];
       if (!u) throw new Error("No account found for that email. Sign up first.");
@@ -3451,9 +4187,18 @@
       if (h !== u.hash) throw new Error("Incorrect password. Please try again.");
       return { email: email, name: u.name };
     },
-    logout(){ localStorage.removeItem(SESSION_KEY); if (cloudOn && Cloud.logout) Cloud.logout(); },
-    saveSession(user){ localStorage.setItem(SESSION_KEY, JSON.stringify(user)); },
-    getSession(){ try { return JSON.parse(localStorage.getItem(SESSION_KEY)); } catch(e){ return null; } }
+    logout(){
+      localStorage.removeItem(SESSION_KEY);
+      if (cloudOn && Cloud.logout) Cloud.logout();
+    },
+    saveSession(user){
+      localStorage.setItem(SESSION_KEY, JSON.stringify(user));
+      if (user && user.email) {
+        localStorage.setItem(LAST_ACC_KEY, JSON.stringify({ email: user.email, name: user.name }));
+      }
+    },
+    getSession(){ try { return JSON.parse(localStorage.getItem(SESSION_KEY)); } catch(e){ return null; } },
+    getLastAccount(){ try { return JSON.parse(localStorage.getItem(LAST_ACC_KEY)); } catch(e){ return null; } }
   };
 
   var authMode = "login";
@@ -3491,23 +4236,67 @@
     }
   }
 
+  function continueOffline(){
+    hideAuthErr();
+    var last = Auth.getLastAccount();
+    var user;
+    if (last && last.email && last.email !== "offline@unibudget.local") {
+      user = { email: last.email, name: last.name || "Student", isOfflineMode: true, isAuthenticated: false };
+    } else {
+      user = { email: "offline@unibudget.local", name: "Student", isGuest: true, isAuthenticated: false };
+    }
+    Auth.saveSession(user);
+    enterApp(user);
+    toast("Entered in Offline Mode ☁");
+  }
+
   function enterApp(user){
     currentUser = user;
     state = loadState();
+    window.UniBudget = {
+      reload: function(){
+        if (!currentUser) return;
+        state = loadState();
+        render();
+        renderUtang();
+        renderRewardsHub();
+        renderAddHub();
+      }
+    };
     document.body.classList.add("authed");
     var initial = (user.name || user.email).trim().charAt(0).toUpperCase();
     el("#avatarBtn").textContent = initial || "U";
     el("#menuName").textContent = user.name || "Student";
-    el("#menuEmail").textContent = user.email;
+    var isGuestOrOffline = !user || user.isGuest || user.isOfflineMode || user.isAuthenticated === false || user.email === "offline@unibudget.local";
+    el("#menuEmail").textContent = isGuestOrOffline ? "Offline Workspace" : user.email;
+
+    var linkBtn = el("#menuLinkCloud");
+    if (linkBtn) {
+      linkBtn.style.display = isGuestOrOffline ? "block" : "none";
+    }
+
     el("#currency").value = state.currency;
     setType("expense");
+    setHubType("expense");
     injectMascots();
+    initSwipeEngine();
+    goToTab(0, false);
     render();
     progressBaseline();
+
+    if (user.isOfflineAuth) {
+      toast("Logged in offline ✓ (Will sync when reconnected)");
+    }
+
+    if (isGuestOrOffline) {
+      if (window.Cloud && Cloud.setSyncStatus) Cloud.setSyncStatus("guest");
+      checkGuestBanner();
+    }
   }
   function logout(){
     Auth.logout();
     currentUser = null; state = null;
+    window.UniBudget = null;
     document.body.classList.remove("authed");
     el("#menuPop").classList.remove("show");
     el("#authForm").reset();
@@ -3517,6 +4306,17 @@
   el("#tabLogin").addEventListener("click", function(){ setAuthMode("login"); });
   el("#tabSignup").addEventListener("click", function(){ setAuthMode("signup"); });
   el("#authForm").addEventListener("submit", submitAuth);
+  var btnOffline = el("#continueOfflineBtn");
+  if (btnOffline) btnOffline.addEventListener("click", continueOffline);
+
+  function linkCloudAccount(){
+    el("#menuPop").classList.remove("show");
+    openCloudConnectModal(currentUser ? currentUser.email : "");
+  }
+
+  var btnLinkCloud = el("#menuLinkCloud");
+  if (btnLinkCloud) btnLinkCloud.addEventListener("click", linkCloudAccount);
+
   el("#pwToggle").addEventListener("click", function(){
     var p = el("#auPass"); var show = p.type === "password";
     p.type = show ? "text" : "password"; this.textContent = show ? "Hide" : "Show";
@@ -3535,11 +4335,10 @@
   // Bottom Navigation Bar
   el("#tabbar").addEventListener("click", function(e){
     var b = e.target.closest("button"); if (!b) return;
-    var act = b.getAttribute("data-act");
-    if (act === "home")   { showHomeTab(); window.scrollTo({ top: 0, behavior: "smooth" }); }
-    else if (act === "utang")   showUtangTab();
-    else if (act === "rewards") openAchievements();
-    else if (act === "add")     openAddModal();
+    var tIdx = b.getAttribute("data-tab");
+    if (tIdx !== null && tIdx !== undefined) {
+      goToTab(parseInt(tIdx, 10), true);
+    }
   });
 
   // Utang events
