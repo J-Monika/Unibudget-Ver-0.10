@@ -919,17 +919,39 @@
   .fc-body { padding: 6px 20px 20px; width: 100%; box-sizing: border-box; }
   .fc-empty { color: var(--muted); font-size: 13.5px; line-height: 1.5; }
   .fc-empty b { color: #fff; }
-  .fc-hero { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .fc-hero { display: flex; flex-direction: column; gap: 4px; margin-bottom: 2px; }
+  .fc-hero-primary { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
   .fc-hero .amt { font-size: clamp(26px, 7vw, 32px); font-weight: 800; letter-spacing: -.03em; color: #fff !important; }
   .fc-hero .amt.low { color: #fde047 !important; }
   .fc-hero .amt.broke { color: #fca5a5 !important; }
   .fc-hero .per { font-size: 13px; font-weight: 700; color: var(--muted); }
+  .fc-hero-ipon-sub {
+    display: flex; align-items: baseline; gap: 6px; font-size: 13px; font-weight: 700; color: #60a5fa;
+  }
+  .fc-hero-ipon-sub .ipon-rate { font-size: 14.5px; font-weight: 800; color: #93c5fd; }
+  .fc-hero-ipon-sub .lbl { color: #93c5fd; opacity: .9; font-size: 12.5px; }
   .fc-sub { font-size: 12.5px; color: var(--muted); font-weight: 600; margin-top: 4px; word-break: break-word; }
   .fc-sub b { color: #fff; }
-  .fc-track { height: 8px; border-radius: 999px; background: rgba(255,255,255,.12); margin: 12px 0 6px; overflow: hidden; width: 100%; }
-  .fc-track > span { display: block; height: 100%; border-radius: 999px; background: var(--accent); transition: width .4s; }
+  .fc-track { height: 9px; border-radius: 999px; background: rgba(255,255,255,.12); margin: 12px 0 6px; overflow: hidden; width: 100%; display: flex; }
+  .fc-track > span { display: block; height: 100%; border-radius: 999px; background: var(--accent); transition: width .4s ease; }
   .fc-track > span.low { background: var(--warn); }
   .fc-track > span.broke { background: var(--spent); }
+  .fc-bar-spend { display: block; height: 100%; border-radius: 999px 0 0 999px; background: var(--accent); transition: width .4s ease; }
+  .fc-bar-spend.full { border-radius: 999px; }
+  .fc-bar-spend.low { background: var(--warn); }
+  .fc-bar-spend.broke { background: var(--spent); }
+  .fc-bar-ipon {
+    display: block; height: 100%; border-radius: 0 999px 999px 0; background: linear-gradient(90deg, #2563eb, #60a5fa);
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.45); transition: width .4s ease;
+  }
+  .fc-bar-ipon.full { border-radius: 999px; }
+  .fc-legend-row {
+    display: flex; align-items: center; gap: 14px; margin-top: 6px; font-size: 11.5px; font-weight: 700; color: var(--muted);
+  }
+  .fc-leg-item { display: inline-flex; align-items: center; gap: 5px; }
+  .leg-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+  .leg-dot.green { background: #34d399; }
+  .leg-dot.blue { background: #3b82f6; box-shadow: 0 0 6px rgba(59,130,246,.7); }
   .fc-danger {
     margin-top: 12px; background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 12px;
     padding: 10px 12px; font-size: 12.5px; font-weight: 600; line-height: 1.45;
@@ -1043,6 +1065,136 @@
     0% { transform: scale(0.85); opacity: 0; }
     100% { transform: scale(1); opacity: 1; }
   }
+
+  /* ---------- Ipon Goals Section ---------- */
+  #iponSection {
+    max-width: 640px; margin: 0 auto; padding: 18px 16px 100px;
+    width: 100%; box-sizing: border-box;
+  }
+  .ipon-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 18px; flex-wrap: wrap; gap: 10px;
+  }
+  .ipon-header h2 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -.02em; color: #fff; }
+  .ipon-subhead { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); font-weight: 600; }
+  .ipon-add-btn {
+    border: 0; cursor: pointer; font-family: inherit; font-weight: 800; font-size: 13.5px;
+    background: linear-gradient(135deg, #2563eb, #3b82f6); color: #fff;
+    padding: 9px 16px; border-radius: 12px;
+    display: inline-flex; align-items: center; gap: 6px;
+    box-shadow: 0 4px 14px rgba(37,99,235,.35);
+    transition: opacity .15s, transform .1s;
+  }
+  .ipon-add-btn:hover { opacity: .95; transform: scale(1.02); }
+  .ipon-add-btn:active { transform: scale(.98); }
+
+  .ipon-hero-card {
+    background: linear-gradient(145deg, #1e2640, #151a2d);
+    border: 1.5px solid rgba(59, 130, 246, 0.3); padding: 20px 22px; margin-bottom: 16px;
+    border-radius: 20px; box-shadow: 0 8px 26px rgba(0,0,0,.35);
+  }
+  .ipon-hero-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .ipon-hero-lbl { font-size: 12px; font-weight: 800; color: #93c5fd; text-transform: uppercase; letter-spacing: .04em; }
+  .ipon-hero-amt { font-size: clamp(28px, 8vw, 36px); font-weight: 800; color: #fff; letter-spacing: -.02em; margin-top: 2px; }
+  .ipon-hero-badge {
+    background: rgba(59,130,246,.2); color: #60a5fa; border: 1px solid rgba(59,130,246,.4);
+    padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 800; white-space: nowrap;
+  }
+  .ipon-hero-sub { margin-top: 10px; font-size: 12.5px; color: var(--muted); font-weight: 600; }
+
+  /* Presets */
+  .ipon-presets-wrap { margin-bottom: 20px; width: 100%; box-sizing: border-box; }
+  .ipon-presets-lbl { font-size: 12px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 8px; }
+  .ipon-presets-row {
+    display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .ipon-presets-row::-webkit-scrollbar { display: none; }
+  .ipon-preset-btn {
+    flex: 0 0 auto; background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    padding: 9px 12px; display: flex; align-items: center; gap: 8px; cursor: pointer; font-family: inherit;
+    transition: all .15s;
+  }
+  .ipon-preset-btn:hover { border-color: #3b82f6; background: rgba(59,130,246,.1); }
+  .ipon-preset-btn .ic { font-size: 20px; }
+  .ipon-preset-btn .meta { display: flex; flex-direction: column; text-align: left; }
+  .ipon-preset-btn .n { font-size: 12px; font-weight: 700; color: #fff; white-space: nowrap; }
+  .ipon-preset-btn .a { font-size: 11px; font-weight: 600; color: #60a5fa; }
+
+  /* Goal Cards */
+  .ipon-list { display: flex; flex-direction: column; gap: 14px; }
+  .ipon-empty {
+    text-align: center; color: var(--muted); font-size: 13.5px; padding: 28px 16px;
+    background: var(--card); border-radius: 16px; border: 1.5px dashed var(--line); line-height: 1.5;
+  }
+  .ipon-card {
+    background: var(--card); border: 1.5px solid var(--line); border-radius: 18px;
+    padding: 16px 18px; position: relative; overflow: hidden; box-sizing: border-box;
+    transition: border-color .15s, transform .15s;
+  }
+  .ipon-card:hover { border-color: rgba(59,130,246,.4); }
+  .ipon-card.completed {
+    border-color: rgba(52, 211, 153, 0.4);
+    background: linear-gradient(145deg, rgba(52,211,153,.08), var(--card));
+  }
+  .ipon-card-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .ipon-card-brand { display: flex; align-items: center; gap: 10px; }
+  .ipon-card-ic {
+    width: 42px; height: 42px; border-radius: 12px; background: rgba(59,130,246,.15);
+    display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0;
+  }
+  .ipon-card.completed .ipon-card-ic { background: rgba(52,211,153,.18); }
+  .ipon-card-title { font-size: 15px; font-weight: 800; color: #fff; margin-bottom: 2px; }
+  .ipon-card-target-date { font-size: 11.5px; color: var(--muted); font-weight: 600; }
+  .ipon-card-pct {
+    font-size: 16px; font-weight: 900; color: #60a5fa; font-variant-numeric: tabular-nums;
+  }
+  .ipon-card.completed .ipon-card-pct { color: #34d399; }
+
+  .ipon-card-progress-wrap { margin: 12px 0 8px; }
+  .ipon-card-track {
+    height: 9px; border-radius: 999px; background: rgba(255,255,255,.08); overflow: hidden; width: 100%;
+  }
+  .ipon-card-bar {
+    height: 100%; border-radius: 999px; background: linear-gradient(90deg, #2563eb, #60a5fa);
+    transition: width .5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .ipon-card.completed .ipon-card-bar { background: linear-gradient(90deg, #059669, #34d399); }
+
+  .ipon-card-figures {
+    display: flex; align-items: baseline; justify-content: space-between; font-size: 13px; font-weight: 700;
+  }
+  .ipon-card-saved { color: #fff; font-size: 14.5px; font-weight: 800; }
+  .ipon-card-target { color: var(--muted); font-size: 12px; }
+
+  .ipon-card-pace-box {
+    margin-top: 10px; padding: 8px 12px; border-radius: 12px; background: rgba(59,130,246,.08);
+    border: 1px solid rgba(59,130,246,.2); display: flex; align-items: center; justify-content: space-between;
+    font-size: 12px; font-weight: 700; color: #93c5fd;
+  }
+  .ipon-card-pace-box.completed {
+    background: rgba(52,211,153,.1); border-color: rgba(52,211,153,.3); color: #34d399;
+  }
+
+  .ipon-card-actions {
+    display: flex; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line);
+  }
+  .ipon-btn-action {
+    flex: 1; border: 1px solid var(--line); background: var(--page); color: var(--ink);
+    font-size: 12.5px; font-weight: 700; padding: 8px 10px; border-radius: 10px; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; gap: 5px; font-family: inherit;
+    transition: all .15s;
+  }
+  .ipon-btn-action:hover { background: var(--card-elevated); border-color: var(--muted); }
+  .ipon-btn-action.deposit {
+    background: rgba(59,130,246,.15); color: #93c5fd; border-color: rgba(59,130,246,.35);
+  }
+  .ipon-btn-action.deposit:hover { background: rgba(59,130,246,.25); border-color: #3b82f6; }
+  .ipon-btn-action.withdraw {
+    background: rgba(239,68,68,.12); color: #fca5a5; border-color: rgba(239,68,68,.3);
+  }
+  .ipon-btn-action.withdraw:hover { background: rgba(239,68,68,.22); border-color: #ef4444; }
+  .ipon-btn-action.options { flex: 0 0 38px; padding: 0; }
 
   /* ---------- Utang Section ---------- */
   #utangSection {
@@ -1491,7 +1643,58 @@
       </main>
     </div>
 
-    <!-- PANE 1: UTANG TRACKER -->
+    <!-- PANE 1: IPON GOALS & SAVINGS ENVELOPES -->
+    <div class="tab-pane" id="paneIpon">
+      <section id="iponSection" aria-label="Ipon Goals & Savings Envelopes">
+        <div class="ipon-header">
+          <div>
+            <h2>🎯 Ipon Goals</h2>
+            <p class="ipon-subhead">Set aside baon for what matters most.</p>
+          </div>
+          <button class="ipon-add-btn" id="btnAddIponGoal">＋ New Goal</button>
+        </div>
+
+        <!-- Ipon Hero Summary Card -->
+        <div class="card ipon-hero-card">
+          <div class="ipon-hero-top">
+            <div class="ipon-hero-main">
+              <div class="ipon-hero-lbl">Total Ipon Stashed</div>
+              <div class="ipon-hero-amt num" id="iponHeroTotal">₱0.00</div>
+            </div>
+            <div class="ipon-hero-badge" id="iponActiveCount">0 Active Goals</div>
+          </div>
+          <div class="ipon-hero-sub" id="iponHeroSub">Set a goal to start saving from your daily baon.</div>
+        </div>
+
+        <!-- Quick 1-Tap Presets Carousel -->
+        <div class="ipon-presets-wrap">
+          <div class="ipon-presets-lbl">⚡ Quick Student Presets</div>
+          <div class="ipon-presets-row">
+            <button type="button" class="ipon-preset-btn" data-preset="laptop" data-name="Laptop for Thesis" data-icon="💻" data-amt="15000" data-days="90">
+              <span class="ic">💻</span>
+              <div class="meta"><span class="n">Laptop / Thesis</span><span class="a">₱15,000</span></div>
+            </button>
+            <button type="button" class="ipon-preset-btn" data-preset="concert" data-name="Concert Ticket" data-icon="🎟️" data-amt="4500" data-days="45">
+              <span class="ic">🎟️</span>
+              <div class="meta"><span class="n">Concert Ticket</span><span class="a">₱4,500</span></div>
+            </button>
+            <button type="button" class="ipon-preset-btn" data-preset="sembreak" data-name="Sembreak Trip" data-icon="🏖️" data-amt="3000" data-days="60">
+              <span class="ic">🏖️</span>
+              <div class="meta"><span class="n">Sembreak Trip</span><span class="a">₱3,000</span></div>
+            </button>
+            <button type="button" class="ipon-preset-btn" data-preset="emergency" data-name="Emergency Ipon" data-icon="🛡️" data-amt="5000" data-days="120">
+              <span class="ic">🛡️</span>
+              <div class="meta"><span class="n">Emergency Ipon</span><span class="a">₱5,000</span></div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Active Ipon Goals List -->
+        <div class="ipon-list" id="iponList"></div>
+      </section>
+    </div>
+
+    <!-- PANE 2: UTANG TRACKER -->
     <div class="tab-pane" id="paneUtang">
       <section id="utangSection" aria-label="Utang tracker">
         <div class="utang-header">
@@ -1988,12 +2191,82 @@
   </div>
 </div>
 
+<!-- ============ IPON GOAL CREATE / EDIT MODAL ============ -->
+<div class="scrim" id="iponModalScrim">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="iponModalTitle">
+    <div class="modal-head">
+      <div>
+        <h3 id="iponModalTitle">🎯 New Ipon Goal</h3>
+        <p>Set a savings target with deadline.</p>
+      </div>
+      <button class="x" id="closeIponModal" aria-label="Close">✕</button>
+    </div>
+    <form id="iponGoalForm" autocomplete="off">
+      <input type="hidden" id="iponGoalId" value="" />
+      <div class="field">
+        <label for="iponGoalName">Goal Name</label>
+        <input id="iponGoalName" type="text" placeholder="e.g. Laptop for Thesis, Concert Ticket" required />
+      </div>
+      <div class="field">
+        <label for="iponGoalIcon">Emoji Icon</label>
+        <input id="iponGoalIcon" type="text" placeholder="💻" maxlength="4" value="🎯" />
+      </div>
+      <div class="field">
+        <label for="iponGoalTarget">Target Amount</label>
+        <div class="amt-wrap">
+          <span class="sym" id="iponTargetSym">₱</span>
+          <input id="iponGoalTarget" class="num" type="number" min="1" step="50" placeholder="5000.00" required />
+        </div>
+      </div>
+      <div class="field">
+        <label for="iponGoalDate">Target Due Date</label>
+        <input id="iponGoalDate" type="date" required />
+      </div>
+      <div class="field">
+        <label for="iponGoalWallet">Storage Account / Vault</label>
+        <select id="iponGoalWallet" class="f"></select>
+      </div>
+      <button type="submit" class="submit" id="btnSaveIponGoal">Save Ipon Goal</button>
+    </form>
+  </div>
+</div>
+
+<!-- ============ IPON DEPOSIT / WITHDRAW ACTION MODAL ============ -->
+<div class="scrim" id="iponActionScrim">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="iponActionTitle">
+    <div class="modal-head">
+      <div>
+        <h3 id="iponActionTitle">📥 Deposit to Goal</h3>
+        <p id="iponActionSub">Transfer money into your Ipon savings vault.</p>
+      </div>
+      <button class="x" id="closeIponAction" aria-label="Close">✕</button>
+    </div>
+    <form id="iponActionForm" autocomplete="off">
+      <input type="hidden" id="iponActionGoalId" value="" />
+      <input type="hidden" id="iponActionType" value="deposit" />
+      <div class="field">
+        <label for="iponActionAmount">Amount</label>
+        <div class="amt-wrap">
+          <span class="sym" id="iponActionSym">₱</span>
+          <input id="iponActionAmount" class="num" type="number" min="0.01" step="0.01" placeholder="0.00" required />
+        </div>
+      </div>
+      <div class="field">
+        <label for="iponActionWallet" id="iponActionWalletLabel">From Account / Wallet</label>
+        <select id="iponActionWallet" class="f"></select>
+      </div>
+      <button type="submit" class="submit" id="btnSubmitIponAction">Confirm Deposit</button>
+    </form>
+  </div>
+</div>
+
 <!-- Bottom Navigation Bar -->
 <nav id="tabbar" aria-label="Quick actions">
   <button type="button" data-tab="0" data-act="home" id="tabHome" class="active"><span>🏠</span>Home</button>
-  <button type="button" data-tab="1" data-act="utang" id="tabUtang"><span>🤝</span>Utang</button>
-  <button type="button" data-tab="2" data-act="rewards" id="tabRewards"><span>🏆</span>Rewards</button>
-  <button type="button" data-tab="3" data-act="add" id="tabAdd" style="color:var(--accent)"><span>➕</span>Add</button>
+  <button type="button" data-tab="1" data-act="ipon" id="tabIpon"><span>🎯</span>Ipon</button>
+  <button type="button" data-tab="2" data-act="utang" id="tabUtang"><span>🤝</span>Utang</button>
+  <button type="button" data-tab="3" data-act="rewards" id="tabRewards"><span>🏆</span>Rewards</button>
+  <button type="button" data-tab="4" data-act="add" id="tabAdd" style="color:var(--accent)"><span>➕</span>Add</button>
 </nav>
 
 <div id="onb"><div class="onb-card" id="onbCard"></div></div>
@@ -2076,7 +2349,8 @@
       currency: "PHP",
       limits: Object.assign({}, DEFAULT_LIMITS),
       wallets: window.WalletEngine ? WalletEngine.normalizeWallets() : [],
-      txns: demo
+      txns: demo,
+      iponGoals: []
     };
   }
 
@@ -2093,6 +2367,7 @@
     }
     if (!Array.isArray(s.txns)) s.txns = [];
     if (!Array.isArray(s.utangs)) s.utangs = [];
+    if (!Array.isArray(s.iponGoals)) s.iponGoals = [];
     s.txns.forEach(function(t){
       if (!t.id) t.id = id();
       if (!t.walletId) t.walletId = "w-cash";
@@ -3151,6 +3426,41 @@
     }
     return streak;
   }
+  function computeIponRequirements() {
+    var goals = (state && Array.isArray(state.iponGoals))
+      ? state.iponGoals.filter(function(g) { return !g.deleted && !g.completed; })
+      : [];
+    var nowMs = Date.now();
+    var dayMs = 86400000;
+    var totalDailyIpon = 0;
+    var totalRemaining = 0;
+    var totalSaved = 0;
+    var activeGoals = [];
+
+    goals.forEach(function(g) {
+      var saved = g.savedAmount || 0;
+      totalSaved += saved;
+      var remaining = Math.max(0, (g.targetAmount || 0) - saved);
+      totalRemaining += remaining;
+
+      if (remaining > 0) {
+        var targetMs = g.targetDate ? new Date(g.targetDate + "T23:59:59").getTime() : (nowMs + 30 * dayMs);
+        var daysLeft = Math.max(1, Math.ceil((targetMs - nowMs) / dayMs));
+        var dailyRate = remaining / daysLeft;
+        totalDailyIpon += dailyRate;
+        activeGoals.push({ goal: g, daysLeft: daysLeft, dailyRate: dailyRate, remaining: remaining });
+      }
+    });
+
+    return {
+      activeCount: goals.length,
+      totalSaved: totalSaved,
+      totalRemaining: totalRemaining,
+      totalDailyIpon: totalDailyIpon,
+      activeGoals: activeGoals
+    };
+  }
+
   function renderForecast(){
     var body = el("#fcBody"); if (!body) return;
     var f = computeForecast();
@@ -3158,26 +3468,75 @@
       body.innerHTML = '<div class="fc-empty">Set your <b>baon</b> (allowance) and UniBudget will compute how much is <b>safe to spend today</b>.</div>';
       return;
     }
-    var perDay = f.safePerDay;
-    var cls = perDay <= 0 ? "broke" : (perDay < (f.amount / (f.w.len)) * 0.6 ? "low" : "ok");
-    var pctLeft = Math.max(0, Math.min(100, (f.available / f.amount) * 100));
+
+    var iponReq = computeIponRequirements();
+    var hasIpon = iponReq.totalDailyIpon > 0;
     var streak = tipidStreak();
     var periodLabel = state.allowance.period === "daily" ? "today" : (state.allowance.period === "monthly" ? "month" : "week");
+
+    // Total required Ipon for the remaining period window
+    var periodIponNeeded = iponReq.totalDailyIpon * f.daysLeft;
+    
+    // Disposable cash after setting aside Ipon needed
+    var disposableAvailable = Math.max(0, f.available - periodIponNeeded);
+    var disposableSafePerDay = disposableAvailable / f.daysLeft;
+
+    // Is user eating into Ipon savings?
+    var isEatingIntoIpon = hasIpon && f.available > 0 && f.available < periodIponNeeded;
+    var isTotallyBroke = f.available <= 0;
+
+    // Percentages of total allowance amount:
+    // Green disposable comes FIRST from left, then Blue Ipon buffer
+    var pctDisposable = f.amount > 0 ? Math.max(0, Math.min(100, (disposableAvailable / f.amount) * 100)) : 0;
+    var iponPortion = hasIpon ? Math.min(periodIponNeeded, f.available) : 0;
+    var pctIpon = f.amount > 0 ? Math.max(0, Math.min(100 - pctDisposable, (iponPortion / f.amount) * 100)) : 0;
+
+    var cls = isTotallyBroke ? "broke" : (disposableSafePerDay < (f.amount / (f.w.len)) * 0.4 ? "low" : "ok");
+
+    var heroHtml = '';
+    if (hasIpon) {
+      heroHtml = ''+
+        '<div class="fc-hero">'+
+          '<div class="fc-hero-primary"><span class="amt '+cls+' num">'+fmt(Math.max(0, disposableSafePerDay))+'</span><span class="per">' + (f.isDaily ? 'safe today' : 'safe/day') + '</span></div>'+
+          '<div class="fc-hero-ipon-sub"><span class="ipon-rate num">'+fmt(iponReq.totalDailyIpon)+'</span> <span class="lbl">safe/day to hit ipon goal</span></div>'+
+        '</div>';
+    } else {
+      heroHtml = ''+
+        '<div class="fc-hero">'+
+          '<div class="fc-hero-primary"><span class="amt '+cls+' num">'+fmt(Math.max(0, f.safePerDay))+'</span><span class="per">' + (f.isDaily ? 'safe today' : 'safe / day') + '</span></div>'+
+        '</div>';
+    }
+
     var subText = f.isDaily
       ? '<b>' + fmt(Math.max(0, f.available)) + '</b> left of today\'s baon · resets tomorrow'
-      : '<b>' + fmt(Math.max(0, f.available)) + '</b> left · <b>' + f.daysLeft + '</b> day' + (f.daysLeft===1?"":"s") + ' until ' + fmtDate(f.w.end);
+      : '<b>' + fmt(Math.max(0, f.available)) + '</b> total baon left · <b>' + f.daysLeft + '</b> day' + (f.daysLeft===1?"":"s") + ' until ' + fmtDate(f.w.end);
 
-    var html = ''+
-      '<div class="fc-hero"><span class="amt '+cls+' num">'+fmt(Math.max(0, perDay))+'</span><span class="per">' + (f.isDaily ? 'safe today' : 'safe / day') + '</span></div>'+
-      '<div class="fc-sub">' + subText + '</div>'+
-      '<div class="fc-track"><span class="'+cls+'" style="width:'+pctLeft+'%"></span></div>';
-    if (f.available <= 0){
+    // Multi-segment track: Green disposable first, then Blue Ipon buffer
+    var trackHtml = ''+
+      '<div class="fc-track">'+
+        (pctDisposable > 0 ? '<span class="fc-bar-spend '+cls+(pctIpon <= 0 ? ' full' : '')+'" style="width:'+pctDisposable+'%" title="Spendable: '+fmt(disposableAvailable)+'"></span>' : '')+
+        (pctIpon > 0 ? '<span class="fc-bar-ipon'+(pctDisposable <= 0 ? ' full' : '')+'" style="width:'+pctIpon+'%" title="Ipon Goal Buffer: '+fmt(iponPortion)+'"></span>' : '')+
+      '</div>';
+
+    var legendHtml = hasIpon ? ''+
+      '<div class="fc-legend-row">'+
+        '<span class="fc-leg-item"><span class="leg-dot green"></span> '+fmt(disposableAvailable)+' spendable</span>'+
+        '<span class="fc-leg-item"><span class="leg-dot blue"></span> '+fmt(iponPortion)+' for Ipon</span>'+
+      '</div>' : '';
+
+    var html = heroHtml + '<div class="fc-sub">' + subText + '</div>' + trackHtml + legendHtml;
+
+    if (isTotallyBroke){
       html += '<div class="fc-danger">😵 <b>Petsa de peligro!</b> You\'ve used up ' + (f.isDaily ? "today's" : "this " + periodLabel + "'s") + ' baon. Hold off until ' + (f.isDaily ? 'tomorrow' : fmtDate(f.w.end)) + '.</div>';
+    } else if (isEatingIntoIpon){
+      var deficit = periodIponNeeded - f.available;
+      html += '<div class="fc-danger" style="background:rgba(245,158,11,.18);color:#fde047;border-color:rgba(245,158,11,.4)">⚠️ <b>Eating into Ipon savings!</b> You are <b>'+fmt(deficit)+'</b> below your required Ipon reserve for this period. Try to cut back today.</div>';
     } else if (f.danger && !f.isDaily){
       var early = Math.max(1, Math.round((f.w.end - f.runOut) / 86400000));
       var fix = f.available / f.daysLeft;
       html += '<div class="fc-danger">⚠️ At this pace your baon runs out around <b>'+fmtDate(f.runOut)+'</b> — about <b>'+early+' day'+(early===1?"":"s")+' early</b>. Keep it under <b>'+fmt(fix)+'/day</b> to make it.</div>';
     }
+
     if (streak >= 1){
       html += '<div class="fc-streak">🔥 '+streak+'-day tipid streak'+(streak>=3?" — go ka!":"")+'</div>';
     }
@@ -3532,11 +3891,376 @@
   function closePaidUtangs(){ el("#paidScrim").classList.remove("show"); }
 
   // =====================================================================
+  //  IPON GOALS & SAVINGS ENVELOPES
+  // =====================================================================
+  function renderIpon(){
+    if (!state) return;
+    if (!Array.isArray(state.iponGoals)) state.iponGoals = [];
+    var goals = state.iponGoals.filter(function(g){ return !g.deleted; });
+
+    var totalSaved = 0;
+    var activeCount = 0;
+    var nextMilestoneDate = null;
+    var nextMilestoneName = "";
+    var nowMs = Date.now();
+    var dayMs = 86400000;
+
+    goals.forEach(function(g){
+      totalSaved += (g.savedAmount || 0);
+      if (!g.completed) {
+        activeCount++;
+        if (g.targetDate) {
+          var t = new Date(g.targetDate + "T23:59:59").getTime();
+          if (!nextMilestoneDate || t < nextMilestoneDate) {
+            nextMilestoneDate = t;
+            nextMilestoneName = g.name;
+          }
+        }
+      }
+    });
+
+    var totalEl = el("#iponHeroTotal");
+    if (totalEl) totalEl.textContent = fmt(totalSaved);
+
+    var badgeEl = el("#iponActiveCount");
+    if (badgeEl) badgeEl.textContent = activeCount + " Active Goal" + (activeCount === 1 ? "" : "s");
+
+    var subEl = el("#iponHeroSub");
+    if (subEl) {
+      if (activeCount === 0) {
+        subEl.innerHTML = "Set a goal to start saving from your daily baon.";
+      } else if (nextMilestoneDate) {
+        var days = Math.max(1, Math.ceil((nextMilestoneDate - nowMs) / dayMs));
+        subEl.innerHTML = "🎯 Next target: <b>" + esc(nextMilestoneName) + "</b> in <b>" + days + " day" + (days === 1 ? "" : "s") + "</b> (" + fmtDate(nextMilestoneDate) + ")";
+      } else {
+        subEl.innerHTML = "🔥 Tracking <b>" + activeCount + "</b> active savings goal" + (activeCount === 1 ? "" : "s") + "!";
+      }
+    }
+
+    var listEl = el("#iponList");
+    if (!listEl) return;
+    listEl.innerHTML = "";
+
+    if (goals.length === 0) {
+      listEl.innerHTML = '<div class="ipon-empty">🎯 <b>No Ipon Goals yet!</b><br/>Tap a quick preset above or <b>＋ New Goal</b> to start saving for your thesis, concert ticket, or emergency fund.</div>';
+      return;
+    }
+
+    goals.forEach(function(g){
+      var target = g.targetAmount || 1;
+      var saved = g.savedAmount || 0;
+      var pct = Math.min(100, Math.round((saved / target) * 100));
+      var isDone = g.completed || (saved >= target);
+      var targetMs = g.targetDate ? new Date(g.targetDate + "T23:59:59").getTime() : (nowMs + 30 * dayMs);
+      var daysLeft = Math.max(1, Math.ceil((targetMs - nowMs) / dayMs));
+      var remaining = Math.max(0, target - saved);
+      var dailyRate = remaining / daysLeft;
+
+      var card = document.createElement("div");
+      card.className = "ipon-card" + (isDone ? " completed" : "");
+      card.innerHTML =
+        '<div class="ipon-card-top">' +
+          '<div class="ipon-card-brand">' +
+            '<div class="ipon-card-ic">' + (g.icon || "🎯") + '</div>' +
+            '<div>' +
+              '<div class="ipon-card-title">' + esc(g.name) + '</div>' +
+              '<div class="ipon-card-target-date">' + (g.targetDate ? 'Target: ' + fmtDate(targetMs) : 'Ongoing Goal') + '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="ipon-card-pct">' + (isDone ? '✅ 100%' : pct + '%') + '</div>' +
+        '</div>' +
+        '<div class="ipon-card-progress-wrap">' +
+          '<div class="ipon-card-track"><span class="ipon-card-bar" style="width:' + pct + '%"></span></div>' +
+        '</div>' +
+        '<div class="ipon-card-figures">' +
+          '<span class="ipon-card-saved">' + fmt(saved) + ' <span style="font-size:11px;font-weight:600;color:var(--muted)">saved</span></span>' +
+          '<span class="ipon-card-target">Target: ' + fmt(target) + '</span>' +
+        '</div>' +
+        '<div class="ipon-card-pace-box' + (isDone ? ' completed' : '') + '">' +
+          (isDone
+            ? '<span>🎉 Goal Achieved! Great job, Ipon Master!</span>'
+            : '<span>⚡ <b>' + fmt(dailyRate) + '/day</b> needed</span><span>' + daysLeft + ' day' + (daysLeft === 1 ? '' : 's') + ' left</span>'
+          ) +
+        '</div>' +
+        '<div class="ipon-card-actions">' +
+          '<button type="button" class="ipon-btn-action deposit" data-id="' + g.id + '"><span>📥</span> Deposit</button>' +
+          '<button type="button" class="ipon-btn-action withdraw" data-id="' + g.id + '"><span>📤</span> Withdraw</button>' +
+          '<button type="button" class="ipon-btn-action options" data-id="' + g.id + '" title="Edit / Delete"><span>⚙️</span></button>' +
+        '</div>';
+
+      card.querySelector(".ipon-btn-action.deposit").addEventListener("click", function(){ openIponAction(g.id, "deposit"); });
+      card.querySelector(".ipon-btn-action.withdraw").addEventListener("click", function(){ openIponAction(g.id, "withdraw"); });
+      card.querySelector(".ipon-btn-action.options").addEventListener("click", function(){ openIponOptions(g.id); });
+
+      listEl.appendChild(card);
+    });
+  }
+
+  function fillIponWallets(selId, selectedVal){
+    var sel = el(selId); if (!sel || !state || !Array.isArray(state.wallets)) return;
+    sel.innerHTML = "";
+    state.wallets.forEach(function(w){
+      var opt = document.createElement("option");
+      opt.value = w.id;
+      opt.textContent = (w.icon || "💳") + " " + w.name;
+      sel.appendChild(opt);
+    });
+    if (selectedVal && state.wallets.some(function(w){ return w.id === selectedVal; })) sel.value = selectedVal;
+    else if (state.wallets[0]) sel.value = state.wallets[0].id;
+  }
+
+  function openIponModal(goalId){
+    var isEdit = !!goalId;
+    var g = isEdit ? (state.iponGoals || []).find(function(x){ return x.id === goalId; }) : null;
+    el("#iponModalTitle").textContent = isEdit ? "✏️ Edit Ipon Goal" : "🎯 New Ipon Goal";
+    el("#iponGoalId").value = isEdit ? g.id : "";
+    el("#iponGoalName").value = g ? g.name : "";
+    el("#iponGoalIcon").value = g ? (g.icon || "🎯") : "🎯";
+    el("#iponGoalTarget").value = g ? g.targetAmount : "";
+    el("#iponTargetSym").textContent = sym();
+
+    if (g && g.targetDate) {
+      el("#iponGoalDate").value = g.targetDate;
+    } else {
+      var d = new Date(); d.setDate(d.getDate() + 45);
+      el("#iponGoalDate").value = d.toISOString().slice(0,10);
+    }
+
+    fillIponWallets("#iponGoalWallet", g ? g.walletId : null);
+    el("#iponModalScrim").classList.add("show");
+    setTimeout(function(){ el("#iponGoalName").focus(); }, 60);
+  }
+
+  function closeIponModal(){ el("#iponModalScrim").classList.remove("show"); }
+
+  function saveIponGoal(e){
+    e.preventDefault();
+    var gid = el("#iponGoalId").value;
+    var name = el("#iponGoalName").value.trim();
+    var icon = el("#iponGoalIcon").value.trim() || "🎯";
+    var target = parseFloat(el("#iponGoalTarget").value);
+    var date = el("#iponGoalDate").value;
+    var walletId = el("#iponGoalWallet").value || "w-gotyme";
+
+    if (!name) { toast("Enter a goal name"); el("#iponGoalName").focus(); return; }
+    if (!(target > 0)) { toast("Enter a target amount greater than 0"); el("#iponGoalTarget").focus(); return; }
+
+    if (!Array.isArray(state.iponGoals)) state.iponGoals = [];
+
+    if (gid) {
+      var g = state.iponGoals.find(function(x){ return x.id === gid; });
+      if (g) {
+        g.name = name;
+        g.icon = icon;
+        g.targetAmount = Math.round(target * 100) / 100;
+        g.targetDate = date;
+        g.walletId = walletId;
+        g.updated_at = now();
+      }
+    } else {
+      state.iponGoals.push({
+        id: "ipon-" + id(),
+        name: name,
+        icon: icon,
+        targetAmount: Math.round(target * 100) / 100,
+        savedAmount: 0,
+        targetDate: date,
+        walletId: walletId,
+        completed: false,
+        completedAt: null,
+        ts: now(),
+        updated_at: now(),
+        deleted: false
+      });
+    }
+
+    save(); render(); renderIpon(); closeIponModal();
+    toast(gid ? "Goal updated ✓" : "🎯 New Ipon Goal created!");
+  }
+
+  function openIponAction(goalId, type){
+    var g = (state.iponGoals || []).find(function(x){ return x.id === goalId; });
+    if (!g) return;
+    el("#iponActionGoalId").value = goalId;
+    el("#iponActionType").value = type;
+    var isDeposit = type === "deposit";
+    el("#iponActionTitle").textContent = (isDeposit ? "📥 Deposit — " : "📤 Withdraw — ") + g.name;
+    el("#iponActionSub").textContent = isDeposit
+      ? "Stash money from your wallet into this goal."
+      : "Move saved money back to your active wallet.";
+    el("#iponActionWalletLabel").textContent = isDeposit ? "From Account / Wallet" : "To Account / Wallet";
+    el("#btnSubmitIponAction").textContent = isDeposit ? "Confirm Deposit" : "Confirm Withdrawal";
+    el("#iponActionAmount").value = "";
+    el("#iponActionSym").textContent = sym();
+    fillIponWallets("#iponActionWallet", g.walletId);
+    el("#iponActionScrim").classList.add("show");
+    setTimeout(function(){ el("#iponActionAmount").focus(); }, 60);
+  }
+
+  function closeIponAction(){ el("#iponActionScrim").classList.remove("show"); }
+
+  function saveIponAction(e){
+    e.preventDefault();
+    var gid = el("#iponActionGoalId").value;
+    var type = el("#iponActionType").value;
+    var amt = parseFloat(el("#iponActionAmount").value);
+    var wid = el("#iponActionWallet").value;
+    var g = (state.iponGoals || []).find(function(x){ return x.id === gid; });
+    if (!g) return;
+
+    if (!(amt > 0)) { toast("Enter an amount greater than 0"); el("#iponActionAmount").focus(); return; }
+    amt = Math.round(amt * 100) / 100;
+
+    var isDeposit = type === "deposit";
+
+    if (isDeposit) {
+      g.savedAmount = (g.savedAmount || 0) + amt;
+      g.updated_at = now();
+
+      // Log wallet transfer out
+      state.txns.push({
+        id: id(),
+        desc: "Ipon Deposit (" + g.name + ")",
+        amount: amt,
+        type: "transfer",
+        cat: "Transfer",
+        walletId: wid,
+        toWalletId: null,
+        ts: now(),
+        updated_at: now(),
+        deleted: false
+      });
+
+      var justCompleted = !g.completed && (g.savedAmount >= g.targetAmount);
+      if (justCompleted) {
+        g.completed = true;
+        g.completedAt = now();
+        save(); render(); renderIpon(); closeIponAction();
+        celebrate("🎉 Goal reached! " + g.name + " (" + fmt(g.savedAmount) + ") 100% completed! +50 XP!");
+        return;
+      }
+      save(); render(); renderIpon(); closeIponAction();
+      toast("Deposited " + fmt(amt) + " into " + g.name + " ✓");
+    } else {
+      if (amt > (g.savedAmount || 0)) {
+        amt = g.savedAmount || 0;
+        toast("Capped withdrawal to saved balance: " + fmt(amt));
+      }
+      if (amt <= 0) { toast("No funds available to withdraw"); return; }
+      g.savedAmount = Math.max(0, (g.savedAmount || 0) - amt);
+      g.updated_at = now();
+      if (g.savedAmount < g.targetAmount) g.completed = false;
+
+      // Log wallet transfer in
+      state.txns.push({
+        id: id(),
+        desc: "Ipon Withdrawal (" + g.name + ")",
+        amount: amt,
+        type: "transfer",
+        cat: "Transfer",
+        walletId: null,
+        toWalletId: wid,
+        ts: now(),
+        updated_at: now(),
+        deleted: false
+      });
+
+      save(); render(); renderIpon(); closeIponAction();
+      toast("Withdrew " + fmt(amt) + " from " + g.name + " ✓");
+    }
+  }
+
+  function openIponOptions(goalId){
+    var g = (state.iponGoals || []).find(function(x){ return x.id === goalId; });
+    if (!g) return;
+    var choice = prompt("Choose an action for \"" + g.name + "\":\n1: Edit Goal\n2: Delete Goal\nType 1 or 2:");
+    if (choice === "1") {
+      openIponModal(goalId);
+    } else if (choice === "2") {
+      deleteIponGoal(goalId);
+    }
+  }
+
+  function deleteIponGoal(goalId){
+    var g = (state.iponGoals || []).find(function(x){ return x.id === goalId; });
+    if (!g) return;
+    if (!confirm("Delete goal \"" + g.name + "\"? Any saved money will stay recorded.")) return;
+    g.deleted = true;
+    g.updated_at = now();
+    save(); render(); renderIpon();
+    toast("Goal deleted");
+  }
+
+  function initIponPresets(){
+    document.querySelectorAll(".ipon-preset-btn").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var name = btn.getAttribute("data-name") || "New Goal";
+        var icon = btn.getAttribute("data-icon") || "🎯";
+        var amt = parseFloat(btn.getAttribute("data-amt")) || 5000;
+        var days = parseInt(btn.getAttribute("data-days"), 10) || 60;
+
+        el("#iponModalTitle").textContent = "🎯 " + name;
+        el("#iponGoalId").value = "";
+        el("#iponGoalName").value = name;
+        el("#iponGoalIcon").value = icon;
+        el("#iponGoalTarget").value = amt;
+        el("#iponTargetSym").textContent = sym();
+
+        var d = new Date(); d.setDate(d.getDate() + days);
+        el("#iponGoalDate").value = d.toISOString().slice(0,10);
+
+        fillIponWallets("#iponGoalWallet", null);
+        el("#iponModalScrim").classList.add("show");
+      });
+    });
+  }
+
+  // =====================================================================
   //  TAB NAVIGATION & REAL-TIME SWIPE ENGINE
   // =====================================================================
   var currentTabIndex = 0;
-  var TAB_COUNT = 4; // 0: Home, 1: Utang, 2: Rewards, 3: Add Hub
+  var TAB_COUNT = 5; // 0: Home, 1: Ipon, 2: Utang, 3: Rewards, 4: Add Hub
   var swipeEngineInitialized = false;
+
+  function goToTab(index, animated){
+    index = Math.max(0, Math.min(TAB_COUNT - 1, index));
+    currentTabIndex = index;
+    var slider = el("#tabSlider");
+    if (slider) {
+      slider.classList.remove("is-dragging");
+      if (animated === false) {
+        slider.style.transition = "none";
+      } else {
+        slider.style.transition = "transform .32s cubic-bezier(0.22, 1, 0.36, 1)";
+      }
+      slider.style.transform = "translate3d(-" + (index * 100) + "vw, 0, 0)";
+    }
+
+    // Update Tab Bar Active Button
+    var tabs = document.querySelectorAll("#tabbar button");
+    tabs.forEach(function(b){
+      var tIdx = parseInt(b.getAttribute("data-tab"), 10);
+      b.classList.toggle("active", tIdx === index);
+    });
+
+    // FAB Visibility: Show on Home(0), Ipon(1), Utang(2), Rewards(3); Hide on Add Hub(4)
+    var fab = el("#fabAdd");
+    if (fab) {
+      fab.style.display = (index === 4) ? "none" : "grid";
+    }
+
+    // Render Tab Content
+    if (index === 0) { render(); }
+    else if (index === 1) { renderIpon(); }
+    else if (index === 2) { renderUtang(); }
+    else if (index === 3) { renderRewardsHub(); }
+    else if (index === 4) { renderAddHub(); }
+  }
+
+  // Legacy tab helpers for compatibility
+  function showIponTab(){ goToTab(1, true); }
+  function showUtangTab(){ goToTab(2, true); }
+  function showHomeTab(){ goToTab(0, true); }
 
   function renderRewardsHub(){
     if (!state) return;
@@ -3718,7 +4442,7 @@
 
     function isInsideHorizontalScrollable(target){
       if (!target) return false;
-      return !!target.closest(".wallets-carousel, .txn-filter-chips-row, .custom-date-bar, input, select, textarea, .modal, .scrim.show");
+      return !!target.closest(".wallets-carousel, .txn-filter-chips-row, .custom-date-bar, .ipon-presets-row, input, select, textarea, .modal, .scrim.show");
     }
 
     viewport.addEventListener("touchstart", function(e){
@@ -4106,7 +4830,7 @@
       closeGoals(); closeAllowance(); closeAchievements(); closeAddModal();
       closeAddUtang(); closePayUtang(); closePaidUtangs();
       closeTransfer(); closeReconcile(); closeWalletModal(); closeCsvPreview();
-      closeObSheet();
+      closeObSheet(); closeIponModal(); closeIponAction();
     }
   });
   el("#clearAll").addEventListener("click", clearAll);
@@ -4735,6 +5459,7 @@
         if (!currentUser) return;
         state = loadState();
         render();
+        renderIpon();
         renderUtang();
         renderRewardsHub();
         renderAddHub();
@@ -4757,6 +5482,7 @@
     setHubType("expense");
     injectMascots();
     initSwipeEngine();
+    initIponPresets();
     goToTab(0, false);
     render();
     progressBaseline();
@@ -4817,6 +5543,23 @@
       goToTab(parseInt(tIdx, 10), true);
     }
   });
+
+  // Ipon events
+  var btnAddIpon = el("#btnAddIponGoal");
+  if (btnAddIpon) btnAddIpon.addEventListener("click", function(){ openIponModal(); });
+  var closeIpon = el("#closeIponModal");
+  if (closeIpon) closeIpon.addEventListener("click", closeIponModal);
+  var formIpon = el("#iponGoalForm");
+  if (formIpon) formIpon.addEventListener("submit", saveIponGoal);
+  var scrimIpon = el("#iponModalScrim");
+  if (scrimIpon) scrimIpon.addEventListener("click", function(e){ if (e.target === this) closeIponModal(); });
+
+  var closeIponAct = el("#closeIponAction");
+  if (closeIponAct) closeIponAct.addEventListener("click", closeIponAction);
+  var formIponAct = el("#iponActionForm");
+  if (formIponAct) formIponAct.addEventListener("submit", saveIponAction);
+  var scrimIponAct = el("#iponActionScrim");
+  if (scrimIponAct) scrimIponAct.addEventListener("click", function(e){ if (e.target === this) closeIponAction(); });
 
   // Utang events
   el("#addUtangBtn").addEventListener("click", openAddUtang);

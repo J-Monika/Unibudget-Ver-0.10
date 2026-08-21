@@ -4,31 +4,41 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
 
-test('index.html contains swipe viewport and all 4 tab panes', () => {
+test('index.html contains swipe viewport and all 5 tab panes', () => {
   const html = fs.readFileSync(path.join(__dirname, '../www/index.html'), 'utf8');
 
   // Verify container & slider
   assert.match(html, /id="tabViewport"/, 'Must contain #tabViewport');
   assert.match(html, /id="tabSlider"/, 'Must contain #tabSlider');
 
-  // Verify all 4 tab panes
+  // Verify all 5 tab panes
   assert.match(html, /id="paneHome"/, 'Must contain pane 0: #paneHome');
-  assert.match(html, /id="paneUtang"/, 'Must contain pane 1: #paneUtang');
-  assert.match(html, /id="paneRewards"/, 'Must contain pane 2: #paneRewards');
-  assert.match(html, /id="paneAdd"/, 'Must contain pane 3: #paneAdd');
+  assert.match(html, /id="paneIpon"/, 'Must contain pane 1: #paneIpon');
+  assert.match(html, /id="paneUtang"/, 'Must contain pane 2: #paneUtang');
+  assert.match(html, /id="paneRewards"/, 'Must contain pane 3: #paneRewards');
+  assert.match(html, /id="paneAdd"/, 'Must contain pane 4: #paneAdd');
 });
 
-test('index.html contains bottom tab bar with 4 tabs and data-tab attributes', () => {
+test('index.html contains bottom tab bar with 5 tabs and data-tab attributes', () => {
   const html = fs.readFileSync(path.join(__dirname, '../www/index.html'), 'utf8');
 
   assert.match(html, /data-tab="0"[^>]*id="tabHome"/, 'Tab 0 must be Home');
-  assert.match(html, /data-tab="1"[^>]*id="tabUtang"/, 'Tab 1 must be Utang');
-  assert.match(html, /data-tab="2"[^>]*id="tabRewards"/, 'Tab 2 must be Rewards');
-  assert.match(html, /data-tab="3"[^>]*id="tabAdd"/, 'Tab 3 must be Add');
+  assert.match(html, /data-tab="1"[^>]*id="tabIpon"/, 'Tab 1 must be Ipon');
+  assert.match(html, /data-tab="2"[^>]*id="tabUtang"/, 'Tab 2 must be Utang');
+  assert.match(html, /data-tab="3"[^>]*id="tabRewards"/, 'Tab 3 must be Rewards');
+  assert.match(html, /data-tab="4"[^>]*id="tabAdd"/, 'Tab 4 must be Add');
 });
 
-test('index.html contains Rewards Hub and Add Hub interactive elements', () => {
+test('index.html contains Ipon Goals, Rewards Hub and Add Hub interactive elements', () => {
   const html = fs.readFileSync(path.join(__dirname, '../www/index.html'), 'utf8');
+
+  // Ipon Goals elements
+  assert.match(html, /id="iponHeroTotal"/, 'Must contain #iponHeroTotal');
+  assert.match(html, /id="iponActiveCount"/, 'Must contain #iponActiveCount');
+  assert.match(html, /id="iponList"/, 'Must contain #iponList');
+  assert.match(html, /id="btnAddIponGoal"/, 'Must contain #btnAddIponGoal');
+  assert.match(html, /id="iponModalScrim"/, 'Must contain #iponModalScrim');
+  assert.match(html, /id="iponActionScrim"/, 'Must contain #iponActionScrim');
 
   // Rewards Hub elements
   assert.match(html, /id="hubLvlRing"/, 'Must contain #hubLvlRing');
@@ -48,8 +58,8 @@ test('index.html contains Rewards Hub and Add Hub interactive elements', () => {
   assert.match(html, /id="hubBtnUtang"/, 'Must contain #hubBtnUtang');
 });
 
-test('Swipe navigation transition physics and threshold logic', () => {
-  const TAB_COUNT = 4;
+test('Swipe navigation transition physics and threshold logic for 5 tabs', () => {
+  const TAB_COUNT = 5;
   const screenWidth = 375;
   const threshold = screenWidth * 0.20; // 75px
 
@@ -63,15 +73,17 @@ test('Swipe navigation transition physics and threshold logic', () => {
   }
 
   // 1. Swiping left (drag past threshold) -> advances to next tab
-  assert.equal(computeNextTab(0, -80, 0.1), 1, 'Swiping left on Home advances to Utang');
-  assert.equal(computeNextTab(1, -90, 0.1), 2, 'Swiping left on Utang advances to Rewards');
-  assert.equal(computeNextTab(2, -100, 0.1), 3, 'Swiping left on Rewards advances to Add');
-  assert.equal(computeNextTab(3, -100, 0.1), 3, 'Swiping left on Add stays at Add (boundary clamped)');
+  assert.equal(computeNextTab(0, -80, 0.1), 1, 'Swiping left on Home advances to Ipon');
+  assert.equal(computeNextTab(1, -80, 0.1), 2, 'Swiping left on Ipon advances to Utang');
+  assert.equal(computeNextTab(2, -90, 0.1), 3, 'Swiping left on Utang advances to Rewards');
+  assert.equal(computeNextTab(3, -100, 0.1), 4, 'Swiping left on Rewards advances to Add');
+  assert.equal(computeNextTab(4, -100, 0.1), 4, 'Swiping left on Add stays at Add (boundary clamped)');
 
   // 2. Swiping right (drag past threshold) -> goes back to previous tab
-  assert.equal(computeNextTab(3, 85, 0.1), 2, 'Swiping right on Add goes back to Rewards');
-  assert.equal(computeNextTab(2, 90, 0.1), 1, 'Swiping right on Rewards goes back to Utang');
-  assert.equal(computeNextTab(1, 100, 0.1), 0, 'Swiping right on Utang goes back to Home');
+  assert.equal(computeNextTab(4, 85, 0.1), 3, 'Swiping right on Add goes back to Rewards');
+  assert.equal(computeNextTab(3, 85, 0.1), 2, 'Swiping right on Rewards goes back to Utang');
+  assert.equal(computeNextTab(2, 90, 0.1), 1, 'Swiping right on Utang goes back to Ipon');
+  assert.equal(computeNextTab(1, 100, 0.1), 0, 'Swiping right on Ipon goes back to Home');
   assert.equal(computeNextTab(0, 100, 0.1), 0, 'Swiping right on Home stays at Home (boundary clamped)');
 
   // 3. Fast flick gesture (below distance threshold but above velocity threshold)
@@ -80,5 +92,5 @@ test('Swipe navigation transition physics and threshold logic', () => {
 
   // 4. Minor drag (< threshold and slow) -> springs back
   assert.equal(computeNextTab(0, -25, 0.05), 0, 'Minor drag springs back to Home');
-  assert.equal(computeNextTab(2, 20, 0.05), 2, 'Minor drag springs back to Rewards');
+  assert.equal(computeNextTab(1, 20, 0.05), 1, 'Minor drag springs back to Ipon');
 });
